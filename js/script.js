@@ -24,17 +24,11 @@ async function checkRepositories() {
             const repoName = repo.name;
             const repoUrl = repo.html_url;
             const zipUrl = `${repoUrl}/archive/refs/heads/${repo.default_branch}.zip`;
-            repoHtml += `<li>${repoName} <a href="${zipUrl}" download class="glow-button secondary">Download ZIP</a></li>`;
+            repoHtml += `<li><div class="repo-name-container">${repoName}</div> <a href="${zipUrl}" download class="glow-button secondary">Download ZIP</a></li>`;
         });
         repoHtml += '</ul>';
         repoListEl.innerHTML = repoHtml;
-
-        document.getElementById('downloadAllButton').disabled = false;
     } catch (error) {
         repoListEl.innerHTML = `<p class="terminal-error">${error.message}</p>`;
     }
-}
-
-function downloadAllRepos() {
-    alert('Downloading all repositories as a single ZIP is not supported in this version. Please download each repository individually.');
 }
