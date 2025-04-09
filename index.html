@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repository Backup</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-title">GitHub Repository Backup Tool</div>
+        </div>
+        <div class="terminal-content">
+            <div class="terminal-section">
+                <p>Enter a GitHub username to list and backup public repositories.</p>
+                <input type="text" id="username" class="subscription-input" placeholder="Enter GitHub username">
+                <button onclick="checkRepositories()" class="glow-button primary">Check Repositories</button>
+            </div>
+            <div id="repoList" class="terminal-section">
+            </div>
+            <div class="terminal-actions">
+                <button id="downloadAllButton" onclick="downloadAllRepos()" class="glow-button" disabled>Download All Repos as ZIP</button>
+            </div>
+        </div>
+    </div>
+    <script src="js/script.js"></script>
+</body>
+</html>
