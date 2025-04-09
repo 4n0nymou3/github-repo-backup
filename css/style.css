@@ -140,6 +140,20 @@ li {
     gap: 10px;
 }
 
+.repo-name-container {
+    flex-grow: 1;
+    max-width: 70%;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 5px;
+    border: 1px solid var(--terminal-border);
+    border-radius: 4px;
+    background-color: var(--terminal-input-bg);
+    color: var(--terminal-text);
+    font-size: clamp(12px, 1.8vw, 16px);
+    cursor: default;
+}
+
 a.glow-button.secondary {
     background: linear-gradient(45deg, var(--terminal-input-bg), var(--terminal-border));
     text-decoration: none;
