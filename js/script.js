@@ -59,7 +59,7 @@ async function checkRepositories() {
         `;
         
         searchContainer.style.display = 'block';
-        const searchInput = document.getElementById('searchInput');
+        const search barsInput = document.getElementById('searchInput');
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const repoItems = document.querySelectorAll('.repo-item');
@@ -83,7 +83,6 @@ async function checkRepositories() {
             const createDate = new Date(repo.created_at).toLocaleDateString();
             const stars = repo.stargazers_count;
             const forks = repo.forks_count;
-            const cloneUrl = repo.clone_url;
             
             repoHtml += `
                 <div class="repo-item">
@@ -101,9 +100,6 @@ async function checkRepositories() {
                             <a href="${zipUrl}" download class="glow-button secondary">
                                 <i class="fas fa-download"></i>
                             </a>
-                            <button onclick="copyCloneUrl('${cloneUrl}')" class="glow-button secondary">
-                                <i class="fas fa-copy"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -118,14 +114,6 @@ async function checkRepositories() {
         repoHeaderEl.innerHTML = '';
         repoListEl.innerHTML = `<p class="terminal-error"><i class="fas fa-exclamation-triangle"></i> ${error.message}</p>`;
     }
-}
-
-function copyCloneUrl(url) {
-    navigator.clipboard.writeText(`git clone ${url}`).then(() => {
-        alert('Clone command copied to clipboard!');
-    }).catch(err => {
-        console.error('Failed to copy: ', err);
-    });
 }
 
 function showError(message) {
