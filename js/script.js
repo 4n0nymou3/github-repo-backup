@@ -9,11 +9,13 @@ async function checkRepositories() {
     const repoListEl = document.getElementById('repoList');
     const loadingEl = document.getElementById('loading');
     const clearButton = document.getElementById('clear-button');
+    const searchContainer = document.getElementById('searchContainer');
     
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
     loadingEl.style.display = 'flex';
     clearButton.style.display = 'flex';
+    searchContainer.style.display = 'none';
 
     try {
         const userResponse = await fetch(`https://api.github.com/users/${username}`);
@@ -56,6 +58,21 @@ async function checkRepositories() {
             <span class="repo-count">${repos.length}</span>
         `;
         
+        searchContainer.style.display = 'block';
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const repoItems = document.querySelectorAll('.repo-item');
+            repoItems.forEach(item => {
+                const repoName = item.querySelector('.repo-name-container').textContent.toLowerCase();
+                if (repoName.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
         let repoHtml = '<div class="repo-list-container">';
         
         repos.forEach(repo => {
@@ -63,12 +80,20 @@ async function checkRepositories() {
             const repoUrl = repo.html_url;
             const zipUrl = `${repoUrl}/archive/refs/heads/${repo.default_branch}.zip`;
             const updateDate = new Date(repo.updated_at).toLocaleDateString();
+            const createDate = new Date(repo.created_at).toLocaleDateString();
+            const stars = repo.stargazers_count;
+            const forks = repo.forks_count;
+            const cloneUrl = repo.clone_url;
             
             repoHtml += `
                 <div class="repo-item">
                     <div class="repo-name-container" title="${repoName}">${repoName}</div>
                     <div class="repo-info">
-                        <span class="repo-date">Updated: ${updateDate}</span>
+                        <span class="repo-date">Created: ${createDate} | Updated: ${updateDate}</span>
+                        <div class="repo-stats">
+                            <span><i class="fas fa-star"></i> ${stars}</span>
+                            <span><i class="fas fa-code-branch"></i> ${forks}</span>
+                        </div>
                         <div class="repo-actions">
                             <a href="${repoUrl}" target="_blank" class="glow-button secondary">
                                 <i class="fas fa-code"></i>
@@ -76,6 +101,9 @@ async function checkRepositories() {
                             <a href="${zipUrl}" download class="glow-button secondary">
                                 <i class="fas fa-download"></i>
                             </a>
+                            <button onclick="copyCloneUrl('${cloneUrl}')" class="glow-button secondary">
+                                <i class="fas fa-copy"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -92,6 +120,14 @@ async function checkRepositories() {
     }
 }
 
+function copyCloneUrl(url) {
+    navigator.clipboard.writeText(`git clone ${url}`).then(() => {
+        alert('Clone command copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+}
+
 function showError(message) {
     const repoListEl = document.getElementById('repoList');
     repoListEl.innerHTML = `<p class="terminal-error"><i class="fas fa-exclamation-triangle"></i> ${message}</p>`;
@@ -104,10 +140,12 @@ function resetEverything() {
     const defaultAvatar = document.getElementById('default-avatar');
     const profileAvatar = document.getElementById('profile-avatar');
     const clearButton = document.getElementById('clear-button');
+    const searchContainer = document.getElementById('searchContainer');
     
     username.value = '';
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
+    searchContainer.style.display = 'none';
     
     defaultAvatar.style.display = 'block';
     profileAvatar.style.display = 'none';
