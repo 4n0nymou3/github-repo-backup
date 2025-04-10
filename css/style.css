@@ -189,6 +189,11 @@ h3 {
     margin-bottom: 20px;
 }
 
+#repoList {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
 @media (min-width: 600px) {
     .input-section {
         flex-direction: row;
