@@ -142,7 +142,7 @@ li {
 
 .repo-name-container {
     flex-grow: 1;
-    max-width: 35%;
+    max-width: 50%;
     overflow-x: auto;
     white-space: nowrap;
     padding: 5px;
