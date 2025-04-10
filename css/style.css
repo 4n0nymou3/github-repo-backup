@@ -27,16 +27,16 @@ body {
     background-color: var(--terminal-bg);
     color: var(--terminal-text);
     min-height: 100vh;
-    display: flex;
+    display: flex; 
     justify-content: center;
     align-items: center;
-    padding: clamp(5px, 1vw, 15px);
+    padding: clamp(5px, 1vw, 10px);
     background: radial-gradient(circle at center, #202334, #121420);
 }
 
 .terminal-container {
-    width: 100%;
-    max-width: 90vw;
+    width: calc(100% - clamp(10px, 2vw, 20px));
+    height: calc(100vh - clamp(10px, 2vw, 20px));
     background-color: var(--terminal-bg);
     border: 1px solid var(--terminal-border);
     border-radius: 10px;
@@ -47,7 +47,6 @@ body {
     position: relative;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
-    height: 80vh;
 }
 
 .terminal-container:hover {
@@ -79,7 +78,7 @@ body {
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    max-height: calc(80vh - 100px);
+    max-height: calc(100% - 100px);
 }
 
 .fixed-content {
