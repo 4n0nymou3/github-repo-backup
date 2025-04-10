@@ -8,11 +8,9 @@ async function checkRepositories() {
     const repoHeaderEl = document.getElementById('repoHeader');
     const repoListEl = document.getElementById('repoList');
     const loadingEl = document.getElementById('loading');
-    const batchDownloadEl = document.getElementById('batchDownload');
     
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
-    batchDownloadEl.style.display = 'none';
     loadingEl.style.display = 'flex';
 
     try {
@@ -74,19 +72,6 @@ async function checkRepositories() {
         repoHtml += '</div>';
         repoListEl.innerHTML = repoHtml;
         
-        if (repos.length > 0) {
-            batchDownloadEl.style.display = 'flex';
-            batchDownloadEl.innerHTML = `
-                <button onclick="downloadAllRepos('${username}', ${JSON.stringify(repos.map(repo => ({ 
-                    name: repo.name, 
-                    branch: repo.default_branch 
-                })))})" class="glow-button success batch-download-button">
-                    <i class="fas fa-cloud-download-alt button-icon"></i>
-                    <span>Download All (${repos.length} Repositories)</span>
-                </button>
-            `;
-        }
-        
     } catch (error) {
         loadingEl.style.display = 'none';
         repoHeaderEl.innerHTML = '';
@@ -97,42 +82,6 @@ async function checkRepositories() {
 function showError(message) {
     const repoListEl = document.getElementById('repoList');
     repoListEl.innerHTML = `<p class="terminal-error"><i class="fas fa-exclamation-triangle"></i> ${message}</p>`;
-}
-
-function downloadAllRepos(username, repos) {
-    if (!repos || repos.length === 0) return;
-    
-    const batchDownloadEl = document.getElementById('batchDownload');
-    batchDownloadEl.innerHTML = `
-        <button disabled class="glow-button warning batch-download-button">
-            <i class="fas fa-spinner fa-spin button-icon"></i>
-            <span>Preparing Downloads...</span>
-        </button>
-    `;
-    
-    repos.forEach((repo, index) => {
-        setTimeout(() => {
-            const zipUrl = `https://github.com/${username}/${repo.name}/archive/refs/heads/${repo.branch}.zip`;
-            const link = document.createElement('a');
-            link.href = zipUrl;
-            link.download = `${repo.name}.zip`;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            if (index === repos.length - 1) {
-                setTimeout(() => {
-                    batchDownloadEl.innerHTML = `
-                        <button onclick="downloadAllRepos('${username}', ${JSON.stringify(repos)})" class="glow-button success batch-download-button">
-                            <i class="fas fa-cloud-download-alt button-icon"></i>
-                            <span>Download All (${repos.length} Repositories)</span>
-                        </button>
-                    `;
-                }, 3000);
-            }
-        }, index * 300);
-    });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
