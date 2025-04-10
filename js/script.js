@@ -5,8 +5,10 @@ async function checkRepositories() {
         return;
     }
 
-    const repoListEl = document.getElementById('repoList');
-    repoListEl.innerHTML = '<p>Loading repositories...</p>';
+    const repoTitleEl = document.getElementById('repoTitle');
+    const repoItemsEl = document.getElementById('repoItems');
+    repoItemsEl.innerHTML = '<p>Loading repositories...</p>';
+    repoTitleEl.innerHTML = '';
 
     try {
         const response = await fetch(`https://api.github.com/users/${username}/repos?type=public&per_page=100`);
@@ -15,11 +17,13 @@ async function checkRepositories() {
         }
         const repos = await response.json();
         if (repos.length === 0) {
-            repoListEl.innerHTML = '<p>No public repositories found.</p>';
+            repoItemsEl.innerHTML = '<p>No public repositories found.</p>';
+            repoTitleEl.innerHTML = 'Public Repositories: 0';
             return;
         }
 
-        let repoHtml = `<h3>Public Repositories: ${repos.length}</h3><ul>`;
+        repoTitleEl.innerHTML = `Public Repositories: ${repos.length}`;
+        let repoHtml = '<ul>';
         repos.forEach(repo => {
             const repoName = repo.name;
             const repoUrl = repo.html_url;
@@ -27,8 +31,9 @@ async function checkRepositories() {
             repoHtml += `<li><div class="repo-name-container">${repoName}</div> <a href="${zipUrl}" download class="glow-button secondary">Download ZIP</a></li>`;
         });
         repoHtml += '</ul>';
-        repoListEl.innerHTML = repoHtml;
+        repoItemsEl.innerHTML = repoHtml;
     } catch (error) {
-        repoListEl.innerHTML = `<p class="terminal-error">${error.message}</p>`;
+        repoItemsEl.innerHTML = `<p class="terminal-error">${error.message}</p>`;
+        repoTitleEl.innerHTML = 'Public Repositories: -';
     }
 }
