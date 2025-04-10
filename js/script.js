@@ -38,7 +38,6 @@ async function checkRepositories() {
             return;
         }
 
-        // Sort repositories by update date (newest first)
         repos.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
 
         repoHeaderEl.innerHTML = `
@@ -75,7 +74,6 @@ async function checkRepositories() {
         repoHtml += '</div>';
         repoListEl.innerHTML = repoHtml;
         
-        // Add batch download button
         if (repos.length > 0) {
             batchDownloadEl.style.display = 'flex';
             batchDownloadEl.innerHTML = `
@@ -112,7 +110,6 @@ function downloadAllRepos(username, repos) {
         </button>
     `;
     
-    // For each repo, create and click a hidden link to download it
     repos.forEach((repo, index) => {
         setTimeout(() => {
             const zipUrl = `https://github.com/${username}/${repo.name}/archive/refs/heads/${repo.branch}.zip`;
@@ -124,7 +121,6 @@ function downloadAllRepos(username, repos) {
             link.click();
             document.body.removeChild(link);
             
-            // Update button when all downloads are initiated
             if (index === repos.length - 1) {
                 setTimeout(() => {
                     batchDownloadEl.innerHTML = `
@@ -135,11 +131,10 @@ function downloadAllRepos(username, repos) {
                     `;
                 }, 3000);
             }
-        }, index * 300); // Stagger downloads to avoid browser limitations
+        }, index * 300);
     });
 }
 
-// Add event listener for Enter key in the input field
 document.addEventListener('DOMContentLoaded', function() {
     const inputField = document.getElementById('username');
     inputField.addEventListener('keypress', function(event) {
