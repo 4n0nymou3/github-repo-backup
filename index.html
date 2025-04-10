@@ -5,27 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub Public Repository Backup</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="terminal-container">
         <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-btn close"></span>
+                <span class="terminal-btn minimize"></span>
+                <span class="terminal-btn maximize"></span>
+            </div>
             <div class="terminal-title">GitHub Public Repository Backup Tool</div>
         </div>
         <div class="terminal-content">
             <div class="terminal-section">
-                <p>Enter a GitHub username to list and backup public repositories.</p>
+                <p class="terminal-intro">Enter a GitHub username to list and backup public repositories.</p>
                 <div class="terminal-actions input-section">
-                    <input type="text" id="username" class="subscription-input" placeholder="Enter GitHub username">
-                    <button onclick="checkRepositories()" class="glow-button primary">Check Public Repositories</button>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="text" id="username" class="subscription-input" placeholder="Enter GitHub username">
+                    </div>
+                    <button onclick="checkRepositories()" class="glow-button primary">
+                        <i class="fas fa-search button-icon"></i>
+                        <span>Check Public Repositories</span>
+                    </button>
                 </div>
             </div>
-            <div id="repoHeader" class="terminal-section">
+            <div id="repoHeader" class="terminal-section repo-header">
+            </div>
+            <div id="loading" class="loading-container">
+                <div class="terminal-loader">
+                    <div class="terminal-loader-bar"></div>
+                </div>
+                <p class="loading-text">Loading repositories...</p>
             </div>
             <div id="repoList" class="terminal-section">
             </div>
+            <div id="batchDownload" class="terminal-section batch-download-section">
+            </div>
         </div>
         <div class="terminal-footer">
-            Designed by <a href="https://github.com/4n0nymou3" target="_blank">Anonymous</a>
+            <span class="typing-animation">Designed by <a href="https://github.com/4n0nymou3" target="_blank">Anonymous</a></span>
         </div>
     </div>
     <script src="js/script.js"></script>
