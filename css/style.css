@@ -294,6 +294,10 @@ body {
     border: 1px solid var(--terminal-border);
 }
 
+.search-container {
+    margin-bottom: 20px;
+}
+
 .repo-list-container {
     list-style-type: none;
     padding: 0;
@@ -371,6 +375,13 @@ body {
     color: var(--repo-date-color);
 }
 
+.repo-stats {
+    display: flex;
+    gap: 15px;
+    font-size: clamp(10px, 1.4vw, 12px);
+    color: var(--terminal-text);
+}
+
 a.glow-button.secondary {
     background: linear-gradient(45deg, var(--terminal-input-bg), #2a2e3d);
     color: var(--terminal-text);
@@ -384,6 +395,25 @@ a.glow-button.secondary {
 }
 
 a.glow-button.secondary:hover {
+    background: linear-gradient(45deg, #2a2e3d, var(--terminal-input-bg));
+    color: var(--terminal-accent);
+}
+
+button.glow-button.secondary {
+    background: linear-gradient(45deg, var(--terminal-input-bg), #2a2e3d);
+    color: var(--terminal-text);
+    text-decoration: none;
+    padding: clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 18px);
+    font-size: clamp(11px, 1.6vw, 14px);
+    min-width: auto;
+    flex-shrink: 0;
+    width: auto;
+    margin-bottom: 0;
+    border: none;
+    cursor: pointer;
+}
+
+button.glow-button.secondary:hover {
     background: linear-gradient(45deg, #2a2e3d, var(--terminal-input-bg));
     color: var(--terminal-accent);
 }
