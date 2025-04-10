@@ -19,7 +19,7 @@ async function checkRepositories() {
             return;
         }
 
-        let repoHtml = '<h3>Public Repositories:</h3><ul>';
+        let repoHtml = `<h3>Public Repositories: ${repos.length}</h3><ul>`;
         repos.forEach(repo => {
             const repoName = repo.name;
             const repoUrl = repo.html_url;
