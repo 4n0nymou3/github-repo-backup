@@ -1,6 +1,11 @@
+Description:
+A simple web tool to backup GitHub repositories. Enter a GitHub username to list public repositories and download individual repos as ZIP files.
+
+README.md:
+
 # GitHub Public Repository Backup Tool
 
-A simple web tool to list and backup public GitHub repositories. Enter a GitNova username to view all public repositories and download them individually as ZIP files.
+A simple web tool to list and backup public GitHub repositories. Enter a GitHub username to view all public repositories and download them individually as ZIP files.
 
 ## Features
 - List all public repositories of a GitHub user along with their count.
