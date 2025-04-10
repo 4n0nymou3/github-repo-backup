@@ -190,7 +190,7 @@ h3 {
 }
 
 #repoList {
-    max-height: 400px;
+    max-height: 350px;
     overflow-y: auto;
 }
 
