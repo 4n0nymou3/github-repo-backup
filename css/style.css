@@ -13,6 +13,7 @@
     --terminal-success: #73daca;
     --terminal-warning: #ff9e64;
     --box-shadow-color: rgba(0, 0, 0, 0.5);
+    --repo-date-color: #8a94c2;
 }
 
 * {
@@ -97,13 +98,29 @@ body {
     flex: 1;
 }
 
-.input-icon {
+.user-avatar {
     position: absolute;
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--terminal-border);
     font-size: clamp(14px, 1.5vw, 16px);
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-icon {
+    position: relative;
+}
+
+.profile-avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
 .subscription-input {
@@ -220,6 +237,12 @@ body {
     justify-content: center;
 }
 
+.button-group {
+    display: flex;
+    gap: clamp(10px, 2vw, 15px);
+    flex-wrap: wrap;
+}
+
 .input-section {
     flex-direction: column;
     align-items: stretch;
@@ -286,9 +309,26 @@ body {
     border: 1px solid var(--terminal-border);
     display: block;
     white-space: nowrap;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
     text-overflow: ellipsis;
+    width: 100%;
     max-width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--terminal-border) var(--terminal-bg);
+}
+
+.repo-name-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.repo-name-container::-webkit-scrollbar-track {
+    background: var(--terminal-bg);
+}
+
+.repo-name-container::-webkit-scrollbar-thumb {
+    background-color: var(--terminal-border);
+    border-radius: 4px;
 }
 
 .repo-info {
@@ -306,7 +346,7 @@ body {
 
 .repo-date {
     font-size: clamp(10px, 1.4vw, 12px);
-    color: var(--terminal-border);
+    color: var(--repo-date-color);
 }
 
 a.glow-button.secondary {
