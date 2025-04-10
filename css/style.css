@@ -47,6 +47,7 @@ body {
     position: relative;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    height: 80vh;
 }
 
 .terminal-container:hover {
@@ -75,12 +76,24 @@ body {
 .terminal-content {
     padding: clamp(15px, 4vw, 25px);
     flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(80vh - 100px);
+}
+
+.fixed-content {
+    flex-shrink: 0;
+}
+
+.scrollable-content {
+    flex-grow: 1;
     overflow-y: auto;
-    max-height: 70vh;
+    margin-top: 15px;
 }
 
 .terminal-section {
-    margin: clamp(15px, 3vh, 25px) 0;
+    margin: 0 0 clamp(15px, 3vh, 25px) 0;
     animation: fadeIn 0.5s ease forwards;
 }
 
@@ -95,7 +108,7 @@ body {
 .input-wrapper {
     position: relative;
     width: 100%;
-    flex: 1;
+    margin-bottom: 10px;
 }
 
 .user-avatar {
@@ -164,13 +177,14 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-    min-width: clamp(120px, 20vw, 180px);
+    width: 100%;
     white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-bottom: 10px;
 }
 
 .glow-button.primary {
@@ -231,21 +245,26 @@ body {
 
 .terminal-actions {
     display: flex;
+    flex-direction: column;
     gap: clamp(10px, 2vw, 15px);
     margin: clamp(10px, 2vh, 20px) 0;
-    flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
 }
 
 .button-group {
     display: flex;
+    flex-direction: column;
     gap: clamp(10px, 2vw, 15px);
-    flex-wrap: wrap;
+    width: 100%;
 }
 
 .input-section {
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .repo-header {
@@ -311,11 +330,14 @@ body {
     white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
-    text-overflow: ellipsis;
+    text-overflow: unset;
     width: 100%;
     max-width: 100%;
     scrollbar-width: thin;
     scrollbar-color: var(--terminal-border) var(--terminal-bg);
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
 }
 
 .repo-name-container::-webkit-scrollbar {
@@ -357,6 +379,8 @@ a.glow-button.secondary {
     font-size: clamp(11px, 1.6vw, 14px);
     min-width: auto;
     flex-shrink: 0;
+    width: auto;
+    margin-bottom: 0;
 }
 
 a.glow-button.secondary:hover {
@@ -470,35 +494,6 @@ h3 {
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-@media (min-width: 600px) {
-    .input-section {
-        flex-direction: row;
-        align-items: center;
-    }
-
-    .repo-item {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        gap: clamp(15px, 3vw, 25px);
-    }
-
-    .repo-info {
-        flex-direction: row;
-        width: auto;
-    }
-
-    .repo-actions {
-        margin-top: 0;
-    }
-
-    .repo-name-container {
-        flex: 1;
-        min-width: 200px;
-        max-width: 400px;
-    }
 }
 
 @media (min-width: 768px) {
