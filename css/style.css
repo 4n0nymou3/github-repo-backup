@@ -92,6 +92,8 @@ body {
     position: relative;
     overflow: hidden;
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    min-width: 120px;
+    white-space: nowrap;
 }
 
 .glow-button.primary {
