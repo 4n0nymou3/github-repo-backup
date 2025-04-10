@@ -186,12 +186,20 @@ a.glow-button.secondary:hover {
 }
 
 h3 {
-    margin-bottom: 20px;
+    position: sticky;
+    top: 0;
+    background-color: var(--terminal-bg);
+    padding: 10px 0;
+    margin: 0;
 }
 
 #repoList {
-    max-height: 300px;
+    max-height: 320px;
     overflow-y: auto;
+}
+
+#repoItems {
+    margin-top: 10px;
 }
 
 @media (min-width: 600px) {
