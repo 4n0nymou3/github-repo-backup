@@ -8,12 +8,25 @@ async function checkRepositories() {
     const repoHeaderEl = document.getElementById('repoHeader');
     const repoListEl = document.getElementById('repoList');
     const loadingEl = document.getElementById('loading');
+    const clearButton = document.getElementById('clear-button');
     
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
     loadingEl.style.display = 'flex';
+    clearButton.style.display = 'flex';
 
     try {
+        const userResponse = await fetch(`https://api.github.com/users/${username}`);
+        if (userResponse.ok) {
+            const userData = await userResponse.json();
+            if (userData.avatar_url) {
+                document.getElementById('default-avatar').style.display = 'none';
+                const profileAvatar = document.getElementById('profile-avatar');
+                profileAvatar.src = userData.avatar_url;
+                profileAvatar.style.display = 'block';
+            }
+        }
+
         const response = await fetch(`https://api.github.com/users/${username}/repos?type=public&per_page=100`);
         
         if (!response.ok) {
@@ -82,6 +95,25 @@ async function checkRepositories() {
 function showError(message) {
     const repoListEl = document.getElementById('repoList');
     repoListEl.innerHTML = `<p class="terminal-error"><i class="fas fa-exclamation-triangle"></i> ${message}</p>`;
+}
+
+function resetEverything() {
+    const username = document.getElementById('username');
+    const repoHeaderEl = document.getElementById('repoHeader');
+    const repoListEl = document.getElementById('repoList');
+    const defaultAvatar = document.getElementById('default-avatar');
+    const profileAvatar = document.getElementById('profile-avatar');
+    const clearButton = document.getElementById('clear-button');
+    
+    username.value = '';
+    repoHeaderEl.innerHTML = '';
+    repoListEl.innerHTML = '';
+    
+    defaultAvatar.style.display = 'block';
+    profileAvatar.style.display = 'none';
+    profileAvatar.src = '';
+    
+    clearButton.style.display = 'none';
 }
 
 document.addEventListener('DOMContentLoaded', function() {
