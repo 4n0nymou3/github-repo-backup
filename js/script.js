@@ -59,7 +59,7 @@ async function checkRepositories() {
         `;
         
         searchContainer.style.display = 'block';
-        const search barsInput = document.getElementById('searchInput');
+        const searchInput = document.getElementById('searchInput');
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const repoItems = document.querySelectorAll('.repo-item');
