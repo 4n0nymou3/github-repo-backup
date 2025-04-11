@@ -349,12 +349,10 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     text-overflow: unset;
-    width: 100%;
-    max-width: 100%;
+    width: 250px;
     scrollbar-width: thin;
     scrollbar-color: var(--terminal-border) var(--terminal-bg);
     margin-bottom: 8px;
-    overflow: auto;
 }
 
 .repo-description {
