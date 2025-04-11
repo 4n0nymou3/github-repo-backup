@@ -88,7 +88,10 @@ async function checkRepositories() {
                 <div class="repo-item">
                     <div class="repo-name-container" title="${repoName}">${repoName}</div>
                     <div class="repo-info">
-                        <span class="repo-date">Created: ${createDate} | Updated: ${updateDate}</span>
+                        <span class="repo-date">
+                            <span>Created: ${createDate}</span>
+                            <span>Updated: ${updateDate}</span>
+                        </span>
                         <div class="repo-stats">
                             <span><i class="fas fa-star"></i> ${stars}</span>
                             <span><i class="fas fa-code-branch"></i> ${forks}</span>
