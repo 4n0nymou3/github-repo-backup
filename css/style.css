@@ -27,7 +27,7 @@ body {
     background-color: var(--terminal-bg);
     color: var(--terminal-text);
     min-height: 100vh;
-    display: flex; 
+    display: flex;
     justify-content: center;
     align-items: center;
     padding: clamp(5px, 1vw, 10px);
@@ -334,13 +334,10 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     text-overflow: unset;
-    width: 100%;
-    max-width: 100%;
+    width: calc(100% - 20px);
+    margin: 0 10px;
     scrollbar-width: thin;
     scrollbar-color: var(--terminal-border) var(--terminal-bg);
-    flex: 1;
-    min-width: 200px;
-    max-width: 300px;
 }
 
 .repo-name-container::-webkit-scrollbar {
@@ -372,6 +369,9 @@ body {
 .repo-date {
     font-size: clamp(10px, 1.4vw, 12px);
     color: var(--repo-date-color);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .repo-stats {
@@ -379,6 +379,7 @@ body {
     gap: 15px;
     font-size: clamp(10px, 1.4vw, 12px);
     color: var(--terminal-text);
+    margin-right: 15px;
 }
 
 a.glow-button.secondary {
