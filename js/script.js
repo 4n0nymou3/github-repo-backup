@@ -118,7 +118,7 @@ async function checkRepositories() {
             
             repoHtml += `
                 <div class="repo-item">
-                    <div style="width: 100%; max-width: 100%;">
+                    <div>
                         <div class="repo-name-container" title="${repoName}">${repoName}</div>
                         <div class="repo-description" title="${repoDescription}">${repoDescription}</div>
                     </div>
