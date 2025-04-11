@@ -3,19 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A simple web tool to backup GitHub repositories by downloading them as ZIP files">
+    <meta name="author" content="Anonymous">
+    <meta name="theme-color" content="#1a1b26">
+    <meta name="robots" content="index, follow">
     <title>GitHub Public Repository Backup</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239ece6a' d='M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385c.6.105.825-.255.825-.57c0-.285-.015-1.23-.015-2.235c-3.015.555-3.795-.735-4.035-1.41c-.135-.345-.72-1.41-1.23-1.695c-.42-.225-1.02-.78-.015-.795c.945-.015 1.62.87 1.845 1.23c1.08 1.815 2.805 1.305 3.495.99c.105-.78.42-1.305.765-1.605c-2.67-.3-5.46-1.335-5.46-5.925c0-1.305.465-2.385 1.23-3.225c-.12-.3-.54-1.53.12-3.18c0 0 1.005-.315 3.3 1.23c.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23c.66 1.65.24 2.88.12 3.18c.765.84 1.23 1.905 1.23 3.225c0 4.605-2.805 5.625-5.475 5.925c.435.375.81 1.095.81 2.22c0 1.605-.015 2.895-.015 3.3c0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z'/%3E%3C/svg%3E">
 </head>
 <body>
-    <div class="terminal-container">
-        <div class="terminal-header">
-            <div class="terminal-title">GitHub Public Repository Backup Tool</div>
-        </div>
-        <div class="terminal-content">
+    <main class="terminal-container">
+        <header class="terminal-header">
+            <h1 class="terminal-title">GitHub Public Repository Backup Tool</h1>
+        </header>
+        <section class="terminal-content">
             <div class="fixed-content">
                 <div class="terminal-section">
                     <p class="terminal-intro">Enter a GitHub username to list and backup public repositories.</p>
@@ -23,41 +28,46 @@
                         <div class="input-wrapper">
                             <span class="user-avatar" id="user-avatar">
                                 <i class="fas fa-user input-icon" id="default-avatar"></i>
-                                <img src="" id="profile-avatar" class="profile-avatar" style="display: none;">
+                                <img src="" id="profile-avatar" class="profile-avatar" aria-hidden="true" alt="User profile avatar" style="display: none;">
                             </span>
-                            <input type="text" id="username" class="subscription-input" placeholder="Enter GitHub username">
+                            <input type="text" id="username" class="subscription-input" placeholder="Enter GitHub username" aria-label="GitHub username">
                         </div>
                         <div class="button-group">
-                            <button onclick="checkRepositories()" class="glow-button primary">
-                                <i class="fas fa-search button-icon"></i>
+                            <button onclick="checkRepositories()" class="glow-button primary" aria-label="Search repositories">
+                                <i class="fas fa-search button-icon" aria-hidden="true"></i>
                                 <span>Check Public Repositories</span>
                             </button>
-                            <button onclick="resetEverything()" class="glow-button warning" id="clear-button" style="display: none;">
-                                <i class="fas fa-trash button-icon"></i>
+                            <button onclick="resetEverything()" class="glow-button warning" id="clear-button" style="display: none;" aria-label="Clear results">
+                                <i class="fas fa-trash button-icon" aria-hidden="true"></i>
                                 <span>Clear</span>
                             </button>
                         </div>
                     </div>
                 </div>
-                <div id="repoHeader" class="terminal-section repo-header">
+                <div id="repoHeader" class="terminal-section repo-header" aria-live="polite">
                 </div>
-                <div id="loading" class="loading-container">
-                    <div class="terminal-loader">
+                <div id="loading" class="loading-container" aria-hidden="true">
+                    <div class="terminal-loader" role="progressbar" aria-label="Loading repositories">
                         <div class="terminal-loader-bar"></div>
                     </div>
                     <p class="loading-text">Loading repositories...</p>
                 </div>
+                <div id="error-container" class="terminal-error" style="display: none;" aria-live="assertive">
+                </div>
                 <div id="searchContainer" class="terminal-section search-container" style="display: none;">
-                    <input type="text" id="searchInput" class="subscription-input" placeholder="Search repositories...">
+                    <input type="text" id="searchInput" class="subscription-input" placeholder="Search repositories..." aria-label="Search within repositories">
                 </div>
             </div>
-            <div id="repoList" class="terminal-section scrollable-content">
+            <div id="repoList" class="terminal-section scrollable-content" aria-live="polite">
             </div>
-        </div>
-        <div class="terminal-footer">
-            <span class="typing-animation">Designed by <a href="https://github.com/4n0nymou3" target="_blank">Anonymous</a></span>
-        </div>
-    </div>
+        </section>
+        <footer class="terminal-footer">
+            <span class="typing-animation">Designed by <a href="https://github.com/4n0nymou3" target="_blank" rel="noopener">Anonymous</a></span>
+        </footer>
+    </main>
+    <noscript>
+        <div class="terminal-error">This application requires JavaScript to function. Please enable JavaScript in your browser settings.</div>
+    </noscript>
     <script src="js/script.js"></script>
 </body>
 </html>
