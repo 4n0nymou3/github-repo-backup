@@ -347,12 +347,14 @@ body {
     display: block;
     white-space: nowrap;
     overflow-x: auto;
-    overflow-y: hidden;
     text-overflow: unset;
     width: 100%;
+    max-width: 100%;
     scrollbar-width: thin;
     scrollbar-color: var(--terminal-border) var(--terminal-bg);
     margin-bottom: 8px;
+    flex: 0 0 auto;
+    height: 42px;
 }
 
 .repo-description {
