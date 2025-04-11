@@ -93,7 +93,7 @@ async function checkRepositories() {
             const searchTerm = this.value.toLowerCase();
             const repoItems = document.querySelectorAll('.repo-item');
             repoItems.forEach(item => {
-                const repoName = item.querySelector('.repo-name-container').textContent.toLowerCase();
+                const repoName = item.querySelector('.repo-name').textContent.toLowerCase();
                 const repoDesc = item.querySelector('.repo-description')?.textContent.toLowerCase() || '';
                 if (repoName.includes(searchTerm) || repoDesc.includes(searchTerm)) {
                     item.style.display = 'flex';
@@ -119,7 +119,7 @@ async function checkRepositories() {
             repoHtml += `
                 <div class="repo-item">
                     <div>
-                        <div class="repo-name-container" title="${repoName}">${repoName}</div>
+                        <div class="repo-name" title="${repoName}">${repoName}</div>
                         <div class="repo-description" title="${repoDescription}">${repoDescription}</div>
                     </div>
                     <div class="repo-info">
