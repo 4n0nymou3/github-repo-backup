@@ -337,22 +337,24 @@ body {
     border-color: var(--terminal-purple);
 }
 
-.repo-name {
-    font-size: clamp(12px, 1.6vw, 14px);
-    padding: 8px 10px;
-    color: var(--terminal-blue);
-    background-color: rgba(26, 27, 38, 0.5);
+.repo-name-container {
+    font-size: clamp(13px, 1.8vw, 16px);
+    padding: 10px;
     border-radius: 6px;
-    max-height: 60px;
+    background-color: var(--terminal-bg);
+    color: var(--terminal-blue);
+    border: 1px solid var(--terminal-border);
+    display: block;
+    white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
-    white-space: nowrap;
     text-overflow: ellipsis;
-    line-height: 1.4;
     width: 100%;
     max-width: 100%;
-    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: var(--terminal-border) var(--terminal-bg);
     margin-bottom: 8px;
+    flex: 0 0 auto;
 }
 
 .repo-description {
@@ -371,18 +373,18 @@ body {
     line-height: 1.4;
 }
 
-.repo-name::-webkit-scrollbar,
+.repo-name-container::-webkit-scrollbar,
 .repo-description::-webkit-scrollbar {
     height: 4px;
     width: 4px;
 }
 
-.repo-name::-webkit-scrollbar-track,
+.repo-name-container::-webkit-scrollbar-track,
 .repo-description::-webkit-scrollbar-track {
     background: var(--terminal-bg);
 }
 
-.repo-name::-webkit-scrollbar-thumb,
+.repo-name-container::-webkit-scrollbar-thumb,
 .repo-description::-webkit-scrollbar-thumb {
     background-color: var(--terminal-border);
     border-radius: 4px;
