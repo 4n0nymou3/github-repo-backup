@@ -350,9 +350,11 @@ body {
     overflow-y: hidden;
     text-overflow: unset;
     width: 100%;
+    max-width: 100%;
     scrollbar-width: thin;
     scrollbar-color: var(--terminal-border) var(--terminal-bg);
     margin-bottom: 8px;
+    overflow: auto;
 }
 
 .repo-description {
