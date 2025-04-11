@@ -348,6 +348,8 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     scrollbar-width: thin;
     scrollbar-color: var(--terminal-border) var(--terminal-bg);
     margin-bottom: 8px;
