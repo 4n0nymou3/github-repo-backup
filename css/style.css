@@ -337,7 +337,7 @@ body {
     border-color: var(--terminal-purple);
 }
 
-.repo-name-container {
+.repo-name {
     font-size: clamp(13px, 1.8vw, 16px);
     padding: 10px;
     border-radius: 6px;
@@ -348,11 +348,9 @@ body {
     overflow-x: auto;
     overflow-y: hidden;
     width: 100%;
-    margin-bottom: 8px;
-    text-overflow: ellipsis;
     scrollbar-width: thin;
     scrollbar-color: var(--terminal-border) var(--terminal-bg);
-    display: block;
+    margin-bottom: 8px;
 }
 
 .repo-description {
@@ -371,18 +369,18 @@ body {
     line-height: 1.4;
 }
 
-.repo-name-container::-webkit-scrollbar,
+.repo-name::-webkit-scrollbar,
 .repo-description::-webkit-scrollbar {
     height: 4px;
     width: 4px;
 }
 
-.repo-name-container::-webkit-scrollbar-track,
+.repo-name::-webkit-scrollbar-track,
 .repo-description::-webkit-scrollbar-track {
     background: var(--terminal-bg);
 }
 
-.repo-name-container::-webkit-scrollbar-thumb,
+.repo-name::-webkit-scrollbar-thumb,
 .repo-description::-webkit-scrollbar-thumb {
     background-color: var(--terminal-border);
     border-radius: 4px;
