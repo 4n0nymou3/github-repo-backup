@@ -39,7 +39,6 @@ async function checkRepositories() {
     searchContainer.style.display = 'none';
 
     try {
-        // Check API rate limit first
         const rateResponse = await fetch('https://api.github.com/rate_limit');
         const rateData = await rateResponse.json();
         
@@ -48,7 +47,6 @@ async function checkRepositories() {
             throw new Error(`GitHub API rate limit exceeded. Try again after ${resetDate.toLocaleTimeString()}.`);
         }
 
-        // Fetch user data
         const userResponse = await fetch(`https://api.github.com/users/${username}`);
         
         if (!userResponse.ok) {
@@ -61,7 +59,6 @@ async function checkRepositories() {
         
         const userData = await userResponse.json();
         
-        // Update avatar
         if (userData.avatar_url) {
             document.getElementById('default-avatar').style.display = 'none';
             const profileAvatar = document.getElementById('profile-avatar');
@@ -69,7 +66,6 @@ async function checkRepositories() {
             profileAvatar.style.display = 'block';
         }
 
-        // Fetch all repositories (with pagination)
         const repos = await fetchAllRepositories(username);
         
         loadingEl.style.display = 'none';
@@ -92,7 +88,7 @@ async function checkRepositories() {
         
         searchContainer.style.display = 'block';
         const searchInput = document.getElementById('searchInput');
-        searchInput.value = ''; // Clear search input on new search
+        searchInput.value = '';
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const repoItems = document.querySelectorAll('.repo-item');
