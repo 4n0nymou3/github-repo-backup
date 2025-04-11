@@ -344,17 +344,15 @@ body {
     background-color: var(--terminal-bg);
     color: var(--terminal-blue);
     border: 1px solid var(--terminal-border);
-    display: block;
     white-space: nowrap;
     overflow-x: auto;
-    text-overflow: unset;
+    overflow-y: hidden;
     width: 100%;
-    max-width: 100%;
+    margin-bottom: 8px;
+    text-overflow: ellipsis;
     scrollbar-width: thin;
     scrollbar-color: var(--terminal-border) var(--terminal-bg);
-    margin-bottom: 8px;
-    flex: 0 0 auto;
-    height: 42px;
+    display: block;
 }
 
 .repo-description {
