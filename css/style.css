@@ -348,13 +348,11 @@ body {
     white-space: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
-    text-overflow: ellipsis;
+    text-overflow: unset;
     width: 100%;
-    max-width: 100%;
     scrollbar-width: thin;
     scrollbar-color: var(--terminal-border) var(--terminal-bg);
     margin-bottom: 8px;
-    flex: 0 0 auto;
 }
 
 .repo-description {
