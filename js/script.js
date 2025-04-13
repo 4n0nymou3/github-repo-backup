@@ -67,7 +67,7 @@ async function checkRepositories() {
         repos.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
         repoHeaderEl.innerHTML = `<h3>Repositories for ${username}</h3><span class="repo-count">${repos.length}</span>`;
         searchContainer.style.display = 'block';
-        document.getElementById('download-button').style.display = 'flex';
+        downloadButton.style.display = 'flex';
         const searchInput = document.getElementById('searchInput');
         searchInput.value = '';
         searchInput.addEventListener('input', function() {
@@ -147,18 +147,17 @@ async function downloadAllRepositories() {
         return;
     }
     const zip = new JSZip();
-    for (let repo of window.allRepos) {
+    let fetchPromises = window.allRepos.map(repo => {
         const zipUrl = `${repo.html_url}/archive/refs/heads/${repo.default_branch}.zip`;
-        try {
-            const response = await fetch(zipUrl);
-            if (!response.ok) continue;
-            const blob = await response.blob();
-            const arrayBuffer = await blob.arrayBuffer();
-            zip.file(repo.name + ".zip", arrayBuffer);
-        } catch (e) {
-            continue;
-        }
-    }
+        return fetch(zipUrl, { mode: "cors" }).then(response => {
+            if (!response.ok) return null;
+            return response.blob().then(blob => blob.arrayBuffer()).then(buffer => ({ name: repo.name + ".zip", buffer })).catch(() => null);
+        }).catch(() => null);
+    });
+    const results = await Promise.all(fetchPromises);
+    results.forEach(file => {
+        if (file) zip.file(file.name, file.buffer);
+    });
     zip.generateAsync({ type: "base64" }).then(content => {
         sessionStorage.setItem('all_repositories_zip', content);
         let byteCharacters = atob(content);
