@@ -27,11 +27,13 @@ async function checkRepositories() {
     const loadingEl = document.getElementById('loading');
     const clearButton = document.getElementById('clear-button');
     const searchContainer = document.getElementById('searchContainer');
+    const downloadButton = document.getElementById('download-button');
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
     loadingEl.style.display = 'flex';
     clearButton.style.display = 'flex';
     searchContainer.style.display = 'none';
+    downloadButton.style.display = 'none';
     try {
         const rateResponse = await fetch('https://api.github.com/rate_limit');
         const rateData = await rateResponse.json();
@@ -65,6 +67,7 @@ async function checkRepositories() {
         repos.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
         repoHeaderEl.innerHTML = `<h3>Repositories for ${username}</h3><span class="repo-count">${repos.length}</span>`;
         searchContainer.style.display = 'block';
+        document.getElementById('download-button').style.display = 'flex';
         const searchInput = document.getElementById('searchInput');
         searchInput.value = '';
         searchInput.addEventListener('input', function() {
@@ -128,6 +131,17 @@ async function checkRepositories() {
 }
 
 async function downloadAllRepositories() {
+    if (sessionStorage.getItem('all_repositories_zip')) {
+        let base64Content = sessionStorage.getItem('all_repositories_zip');
+        let byteCharacters = atob(base64Content);
+        let byteNumbers = new Uint8Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        let blob = new Blob([byteNumbers], { type: "application/zip" });
+        saveAs(blob, "all_repositories.zip");
+        return;
+    }
     if (!window.allRepos || window.allRepos.length === 0) {
         showError('No repositories to download.');
         return;
@@ -145,8 +159,15 @@ async function downloadAllRepositories() {
             continue;
         }
     }
-    zip.generateAsync({type:"blob"}).then(content => {
-        saveAs(content, "all_repositories.zip");
+    zip.generateAsync({ type: "base64" }).then(content => {
+        sessionStorage.setItem('all_repositories_zip', content);
+        let byteCharacters = atob(content);
+        let byteNumbers = new Uint8Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        let blob = new Blob([byteNumbers], { type: "application/zip" });
+        saveAs(blob, "all_repositories.zip");
     });
 }
 
@@ -163,10 +184,12 @@ function resetEverything() {
     const profileAvatar = document.getElementById('profile-avatar');
     const clearButton = document.getElementById('clear-button');
     const searchContainer = document.getElementById('searchContainer');
+    const downloadButton = document.getElementById('download-button');
     username.value = '';
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
     searchContainer.style.display = 'none';
+    downloadButton.style.display = 'none';
     defaultAvatar.style.display = 'block';
     profileAvatar.style.display = 'none';
     profileAvatar.src = '';
