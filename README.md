@@ -18,13 +18,64 @@ addEventListener('fetch', event => {
 })
 
 async function handleRequest(request) {
-  const url = new URL(request.url)
-  const target = url.searchParams.get('url')
-  if (!target) return new Response("Missing url parameter", { status: 400 })
-  const response = await fetch(target)
-  const newHeaders = new Headers(response.headers)
-  newHeaders.set("Access-Control-Allow-Origin", "*")
-  return new Response(response.body, { status: response.status, headers: newHeaders })
+  try {
+    const url = new URL(request.url);
+    const target = url.searchParams.get('url');
+    
+    if (!target) {
+      return new Response("Missing url parameter", { 
+        status: 400,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "text/plain"
+        }
+      });
+    }
+    
+    const targetUrl = new URL(target);
+    if (!targetUrl.hostname.endsWith('github.com')) {
+      return new Response("Only GitHub URLs are allowed", { 
+        status: 403,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "text/plain"
+        }
+      });
+    }
+    
+    const response = await fetch(target, {
+      cf: {
+        cacheTtl: 3600,
+        cacheEverything: true,
+      }
+    });
+    
+    if (!response.ok) {
+      return new Response(`Error fetching from GitHub: ${response.status}`, {
+        status: response.status,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "text/plain"
+        }
+      });
+    }
+    
+    const newHeaders = new Headers(response.headers);
+    newHeaders.set("Access-Control-Allow-Origin", "*");
+    
+    return new Response(response.body, { 
+      status: response.status, 
+      headers: newHeaders 
+    });
+  } catch (error) {
+    return new Response(`Error: ${error.message}`, { 
+      status: 500,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "text/plain"
+      }
+    });
+  }
 }
 ```
 
