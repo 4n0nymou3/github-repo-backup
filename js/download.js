@@ -62,10 +62,10 @@ async function downloadAllRepositories() {
       let resp = await fetch(workerUrl);
       if (!resp.ok) throw new Error(`Failed to fetch ${url}`);
       let buf = new Uint8Array(await resp.arrayBuffer());
-      files.push({ name: repoName + ".zip", data: buf });
+      files.push({name: repoName + ".zip", data: buf});
     }));
     let zipData = createZip(files);
-    let blob = new Blob([zipData], { type: "application/zip" });
+    let blob = new Blob([zipData], {type: "application/zip"});
     let a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "repositories.zip";
@@ -115,6 +115,7 @@ function createZip(files) {
       numToBytes(0, 2),
       numToBytes(0, 2),
       numToBytes(0, 2),
+      numToBytes(0, 4),
       numToBytes(offset, 4),
       filenameBytes
     );
