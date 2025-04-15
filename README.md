@@ -1,7 +1,3 @@
-# GitHub Public Repository Backup Tool
-
-A simple web tool to list and backup public GitHub repositories. Enter a GitHub username to view all public repositories and download them individually as ZIP files, or download all repositories at once as a single consolidated ZIP file.
-
 ## Features
 - List all public repositories of a GitHub user along with their count.
 - Download individual public repositories as ZIP files.
