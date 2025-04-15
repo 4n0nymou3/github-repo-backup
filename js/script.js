@@ -22,19 +22,16 @@ async function checkRepositories() {
         showError('Please enter a GitHub username.');
         return;
     }
-
     const repoHeaderEl = document.getElementById('repoHeader');
     const repoListEl = document.getElementById('repoList');
     const loadingEl = document.getElementById('loading');
     const clearButton = document.getElementById('clear-button');
     const searchContainer = document.getElementById('searchContainer');
-
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
     loadingEl.style.display = 'flex';
-    clearButton.style.display = 'none';
+    clearButton.style.display = 'flex';
     searchContainer.style.display = 'none';
-
     try {
         const rateResponse = await fetch('https://api.github.com/rate_limit');
         const rateData = await rateResponse.json();
@@ -42,7 +39,6 @@ async function checkRepositories() {
             const resetDate = new Date(rateData.resources.core.reset * 1000);
             throw new Error(`GitHub API rate limit exceeded. Try again after ${resetDate.toLocaleTimeString()}.`);
         }
-
         const userResponse = await fetch(`https://api.github.com/users/${username}`);
         if (!userResponse.ok) {
             if (userResponse.status === 404) {
@@ -51,7 +47,6 @@ async function checkRepositories() {
                 throw new Error(`Error ${userResponse.status}: ${userResponse.statusText}`);
             }
         }
-
         const userData = await userResponse.json();
         if (userData.avatar_url) {
             document.getElementById('default-avatar').style.display = 'none';
@@ -59,31 +54,26 @@ async function checkRepositories() {
             profileAvatar.src = userData.avatar_url;
             profileAvatar.style.display = 'block';
         }
-
         const repos = await fetchAllRepositories(username);
         loadingEl.style.display = 'none';
-
         if (repos.length === 0) {
             repoHeaderEl.innerHTML = `
                 <h3>Repositories for ${username}</h3>
                 <span class="repo-count">0</span>
             `;
             repoListEl.innerHTML = '<p class="terminal-intro">No public repositories found.</p>';
-            clearButton.style.display = 'flex';
+            document.getElementById('download-all-button').style.display = 'none';
             return;
         }
-
         repos.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
-
         repoHeaderEl.innerHTML = `
             <h3>Repositories for ${username}</h3>
             <span class="repo-count">${repos.length}</span>
         `;
-
         searchContainer.style.display = 'block';
         const searchInput = document.getElementById('searchInput');
         searchInput.value = '';
-        searchInput.addEventListener('input', function () {
+        searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             const repoItems = document.querySelectorAll('.repo-item');
             repoItems.forEach(item => {
@@ -96,7 +86,6 @@ async function checkRepositories() {
                 }
             });
         });
-
         let repoHtml = '<div class="repo-list-container">';
         repos.forEach(repo => {
             const repoName = repo.name;
@@ -108,7 +97,6 @@ async function checkRepositories() {
             const stars = repo.stargazers_count;
             const forks = repo.forks_count;
             const language = repo.language || 'Not specified';
-
             repoHtml += `
                 <div class="repo-item">
                     <div>
@@ -138,12 +126,12 @@ async function checkRepositories() {
         });
         repoHtml += '</div>';
         repoListEl.innerHTML = repoHtml;
-        clearButton.style.display = 'flex';
-
+        document.getElementById('download-all-button').style.display = 'flex';
     } catch (error) {
         loadingEl.style.display = 'none';
         repoHeaderEl.innerHTML = '';
         repoListEl.innerHTML = `<p class="terminal-error"><i class="fas fa-exclamation-triangle"></i> ${error.message}</p>`;
+        document.getElementById('download-all-button').style.display = 'none';
     }
 }
 
@@ -160,22 +148,20 @@ function resetEverything() {
     const profileAvatar = document.getElementById('profile-avatar');
     const clearButton = document.getElementById('clear-button');
     const searchContainer = document.getElementById('searchContainer');
-
     username.value = '';
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
     searchContainer.style.display = 'none';
-
     defaultAvatar.style.display = 'block';
     profileAvatar.style.display = 'none';
     profileAvatar.src = '';
-
     clearButton.style.display = 'none';
+    document.getElementById('download-all-button').style.display = 'none';
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function() {
     const inputField = document.getElementById('username');
-    inputField.addEventListener('keypress', function (event) {
+    inputField.addEventListener('keypress', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
             checkRepositories();
