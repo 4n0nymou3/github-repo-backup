@@ -207,6 +207,12 @@ body {
     font-weight: 600;
 }
 
+.glow-button.download-all {
+    background: linear-gradient(45deg, var(--terminal-green), var(--terminal-accent));
+    color: #ffffff;
+    font-weight: 600;
+}
+
 .glow-button.success {
     background: linear-gradient(45deg, var(--terminal-green), var(--terminal-accent));
     color: #ffffff;
@@ -225,9 +231,20 @@ body {
     filter: brightness(1.1);
 }
 
+.glow-button.download-all:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(115, 218, 202, 0.4);
+    filter: brightness(1.1);
+}
+
 .glow-button:active {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(122, 162, 247, 0.4);
+}
+
+.glow-button.download-all:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(115, 218, 202, 0.4);
 }
 
 .glow-button:disabled {
