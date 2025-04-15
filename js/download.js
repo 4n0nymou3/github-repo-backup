@@ -1,9 +1,9 @@
 function crc32(buf) {
   let table = window.crcTable || (window.crcTable = (function() {
     let c, table = [];
-    for(let n =0; n < 256; n++){
+    for (let n = 0; n < 256; n++) {
       c = n;
-      for(let k =0; k < 8; k++){
+      for (let k = 0; k < 8; k++) {
         c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
       }
       table[n] = c;
@@ -11,7 +11,7 @@ function crc32(buf) {
     return table;
   })());
   let crc = 0 ^ (-1);
-  for (let i = 0; i < buf.length; i++ ) {
+  for (let i = 0; i < buf.length; i++) {
     crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xFF];
   }
   return (crc ^ (-1)) >>> 0;
@@ -19,7 +19,7 @@ function crc32(buf) {
 
 function numToBytes(num, bytes) {
   let arr = [];
-  for(let i = 0; i < bytes; i++){
+  for (let i = 0; i < bytes; i++) {
     arr.push(num & 0xFF);
     num = num >>> 8;
   }
@@ -28,7 +28,7 @@ function numToBytes(num, bytes) {
 
 function stringToBytes(str) {
   let arr = [];
-  for(let i = 0; i < str.length; i++){
+  for (let i = 0; i < str.length; i++) {
     arr.push(str.charCodeAt(i));
   }
   return arr;
@@ -47,21 +47,29 @@ function concatArrays(arrays) {
 
 async function downloadAllRepositories() {
   const links = document.querySelectorAll('a[title="Download ZIP"]');
-  if (links.length === 0) { alert("No repositories available."); return; }
-  let files = [];
-  for (let link of links) {
-    let repoName = link.closest('.repo-item').querySelector('.repo-name-container').textContent.trim();
-    let url = link.href;
-    let resp = await fetch(url);
-    let buf = new Uint8Array(await resp.arrayBuffer());
-    files.push({name: repoName + ".zip", data: buf});
+  if (links.length === 0) {
+    alert("No repositories available.");
+    return;
   }
-  let zipData = createZip(files);
-  let blob = new Blob([zipData], {type: "application/zip"});
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "repositories.zip";
-  a.click();
+  let files = [];
+  try {
+    await Promise.all(Array.from(links).map(async link => {
+      let repoName = link.closest('.repo-item').querySelector('.repo-name-container').textContent.trim();
+      let url = link.href;
+      let resp = await fetch(url);
+      if (!resp.ok) throw new Error(`Failed to fetch ${url}`);
+      let buf = new Uint8Array(await resp.arrayBuffer());
+      files.push({name: repoName + ".zip", data: buf});
+    }));
+    let zipData = createZip(files);
+    let blob = new Blob([zipData], {type: "application/zip"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "repositories.zip";
+    a.click();
+  } catch (e) {
+    alert(e.message);
+  }
 }
 
 function createZip(files) {
@@ -123,4 +131,4 @@ function createZip(files) {
   );
   let eocdArr = new Uint8Array(eocd);
   return concatArrays([concatArrays(localFiles), centralData, eocdArr]);
-    }
+}
