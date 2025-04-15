@@ -1,3 +1,5 @@
+const WORKER_URL = "https://github-zip-proxy.imegabiz.workers.dev/";
+
 function crc32(buf) {
   let table = window.crcTable || (window.crcTable = (function() {
     let c, table = [];
@@ -56,13 +58,14 @@ async function downloadAllRepositories() {
     await Promise.all(Array.from(links).map(async link => {
       let repoName = link.closest('.repo-item').querySelector('.repo-name-container').textContent.trim();
       let url = link.href;
-      let resp = await fetch(url);
+      let workerUrl = WORKER_URL + "?url=" + encodeURIComponent(url);
+      let resp = await fetch(workerUrl);
       if (!resp.ok) throw new Error(`Failed to fetch ${url}`);
       let buf = new Uint8Array(await resp.arrayBuffer());
-      files.push({name: repoName + ".zip", data: buf});
+      files.push({ name: repoName + ".zip", data: buf });
     }));
     let zipData = createZip(files);
-    let blob = new Blob([zipData], {type: "application/zip"});
+    let blob = new Blob([zipData], { type: "application/zip" });
     let a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "repositories.zip";
