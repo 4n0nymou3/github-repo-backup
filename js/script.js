@@ -30,7 +30,6 @@ async function checkRepositories() {
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
     loadingEl.style.display = 'flex';
-    clearButton.style.display = 'flex';
     searchContainer.style.display = 'none';
     try {
         const rateResponse = await fetch('https://api.github.com/rate_limit');
@@ -127,6 +126,7 @@ async function checkRepositories() {
         repoHtml += '</div>';
         repoListEl.innerHTML = repoHtml;
         document.getElementById('download-all-button').style.display = 'flex';
+        clearButton.style.display = 'flex';
     } catch (error) {
         loadingEl.style.display = 'none';
         repoHeaderEl.innerHTML = '';
