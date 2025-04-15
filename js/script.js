@@ -49,7 +49,6 @@ async function checkRepositories() {
         return;
     }
     
-    // UI elements
     const repoHeaderEl = document.getElementById('repoHeader');
     const repoListEl = document.getElementById('repoList');
     const loadingEl = document.getElementById('loading');
@@ -58,7 +57,6 @@ async function checkRepositories() {
     const downloadAllButton = document.getElementById('download-all-button');
     const errorContainer = document.getElementById('error-container');
     
-    // Reset UI
     repoHeaderEl.innerHTML = '';
     repoListEl.innerHTML = '';
     errorContainer.style.display = 'none';
@@ -67,14 +65,12 @@ async function checkRepositories() {
     downloadAllButton.style.display = 'none';
     
     try {
-        // Check API rate limit first
         const { remaining, resetTime } = await checkApiRateLimit();
         
         if (remaining <= API_RATE_LIMIT_THRESHOLD) {
             throw new Error(`GitHub API rate limit is low (${remaining} remaining). Try again after ${resetTime.toLocaleTimeString()}.`);
         }
         
-        // Fetch user data
         const userResponse = await fetch(`${API_BASE_URL}/users/${username}`);
         
         if (!userResponse.ok) {
@@ -88,13 +84,10 @@ async function checkRepositories() {
         
         const userData = await userResponse.json();
         
-        // Update avatar
         updateUserAvatar(userData.avatar_url);
         
-        // Fetch all repositories
         const repos = await fetchAllRepositories(username);
         
-        // UI update after data loaded
         loadingEl.style.display = 'none';
         
         if (repos.length === 0) {
@@ -107,22 +100,17 @@ async function checkRepositories() {
             return;
         }
         
-        // Sort repositories by updated date (newest first)
         repos.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
         
-        // Update UI with repository data
         repoHeaderEl.innerHTML = `
             <h3>Repositories for ${username}</h3>
             <span class="repo-count">${repos.length}</span>
         `;
         
-        // Setup search functionality
         setupSearchField(repos.length);
         
-        // Generate repository HTML
         displayRepositories(repos);
         
-        // Show action buttons
         downloadAllButton.style.display = 'flex';
         clearButton.style.display = 'flex';
         
@@ -155,7 +143,6 @@ function setupSearchField(repoCount) {
     searchInput.value = '';
     searchInput.placeholder = `Search among ${repoCount} repositories...`;
     
-    // Debounced search function
     let timeoutId;
     searchInput.addEventListener('input', function() {
         clearTimeout(timeoutId);
@@ -186,7 +173,6 @@ function filterRepositories(searchTerm) {
         }
     });
     
-    // Show message if no results found
     const noResultsMessage = document.getElementById('no-results-message');
     if (visibleCount === 0 && searchTerm) {
         if (!noResultsMessage) {
@@ -294,7 +280,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Clear error message when user starts typing
     inputField.addEventListener('input', function() {
         document.getElementById('error-container').style.display = 'none';
     });
