@@ -37,6 +37,10 @@
                                 <i class="fas fa-search button-icon" aria-hidden="true"></i>
                                 <span>Check Public Repositories</span>
                             </button>
+                            <button onclick="downloadAllRepositories()" class="glow-button primary" id="download-all-button" style="display: none;" aria-label="Download all repositories">
+                                <i class="fas fa-download button-icon"></i>
+                                <span>Download All Repositories</span>
+                            </button>
                             <button onclick="resetEverything()" class="glow-button warning" id="clear-button" style="display: none;" aria-label="Clear results">
                                 <i class="fas fa-trash button-icon" aria-hidden="true"></i>
                                 <span>Clear</span>
@@ -69,5 +73,6 @@
         <div class="terminal-error">This application requires JavaScript to function. Please enable JavaScript in your browser settings.</div>
     </noscript>
     <script src="js/script.js"></script>
+    <script src="js/download.js"></script>
 </body>
 </html>
