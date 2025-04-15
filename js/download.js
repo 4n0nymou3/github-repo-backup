@@ -1,10 +1,10 @@
 const WORKER_URL = "https://github-zip-proxy.imegabiz.workers.dev/";
 
 function crc32(buf) {
-  let table = window.crcTable || (window.crcTable = (function() {
-    let c, table = [];
+  const table = window.crcTable || (window.crcTable = (function() {
+    const table = new Uint32Array(256);
     for (let n = 0; n < 256; n++) {
-      c = n;
+      let c = n;
       for (let k = 0; k < 8; k++) {
         c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
       }
@@ -12,6 +12,7 @@ function crc32(buf) {
     }
     return table;
   })());
+  
   let crc = 0 ^ (-1);
   for (let i = 0; i < buf.length; i++) {
     crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xFF];
@@ -20,28 +21,28 @@ function crc32(buf) {
 }
 
 function numToBytes(num, bytes) {
-  let arr = [];
+  const arr = new Uint8Array(bytes);
   for (let i = 0; i < bytes; i++) {
-    arr.push(num & 0xFF);
+    arr[i] = num & 0xFF;
     num = num >>> 8;
   }
   return arr;
 }
 
 function stringToBytes(str) {
-  let arr = [];
+  const arr = new Uint8Array(str.length);
   for (let i = 0; i < str.length; i++) {
-    arr.push(str.charCodeAt(i));
+    arr[i] = str.charCodeAt(i);
   }
   return arr;
 }
 
 function concatArrays(arrays) {
-  let totalLength = arrays.reduce((acc, arr) => acc + arr.length, 0);
-  let result = new Uint8Array(totalLength);
+  const totalLength = arrays.reduce((acc, arr) => acc + arr.length, 0);
+  const result = new Uint8Array(totalLength);
   let offset = 0;
   arrays.forEach(arr => {
-    result.set(arr, offset);
+    result.set(arr instanceof Uint8Array ? arr : new Uint8Array(arr), offset);
     offset += arr.length;
   });
   return result;
@@ -50,89 +51,149 @@ function concatArrays(arrays) {
 async function downloadAllRepositories() {
   const links = document.querySelectorAll('a[title="Download ZIP"]');
   if (links.length === 0) {
-    alert("No repositories available.");
+    showError("No repositories available.");
     return;
   }
-  let files = [];
+  
+  const downloadAllButton = document.getElementById('download-all-button');
+  const originalText = downloadAllButton.innerHTML;
+  downloadAllButton.innerHTML = '<i class="fas fa-spinner fa-spin button-icon"></i><span>Downloading...</span>';
+  downloadAllButton.disabled = true;
+  
+  const files = [];
+  let errorOccurred = false;
+  
   try {
-    await Promise.all(Array.from(links).map(async link => {
-      let repoName = link.closest('.repo-item').querySelector('.repo-name-container').textContent.trim();
-      let url = link.href;
-      let workerUrl = WORKER_URL + "?url=" + encodeURIComponent(url);
-      let resp = await fetch(workerUrl);
-      if (!resp.ok) throw new Error(`Failed to fetch ${url}`);
-      let buf = new Uint8Array(await resp.arrayBuffer());
-      files.push({name: repoName + ".zip", data: buf});
+    await Promise.all(Array.from(links).map(async (link, index) => {
+      const repoItem = link.closest('.repo-item');
+      const repoName = repoItem.querySelector('.repo-name-container').textContent.trim();
+      const url = link.href;
+      
+      try {
+        repoItem.style.backgroundColor = 'rgba(122, 162, 247, 0.1)';
+        const workerUrl = `${WORKER_URL}?url=${encodeURIComponent(url)}`;
+        
+        const resp = await fetch(workerUrl);
+        if (!resp.ok) throw new Error(`Failed to fetch ${repoName}`);
+        
+        const buf = new Uint8Array(await resp.arrayBuffer());
+        files.push({name: `${repoName}.zip`, data: buf});
+        
+        repoItem.style.backgroundColor = 'rgba(115, 218, 202, 0.1)';
+      } catch (err) {
+        repoItem.style.backgroundColor = 'rgba(247, 118, 142, 0.1)';
+        console.error(`Error downloading ${repoName}: ${err.message}`);
+        errorOccurred = true;
+      }
     }));
-    let zipData = createZip(files);
-    let blob = new Blob([zipData], {type: "application/zip"});
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "repositories.zip";
-    a.click();
-  } catch (e) {
-    alert(e.message);
+    
+    if (errorOccurred) {
+      if (files.length === 0) {
+        throw new Error('Failed to download any repositories');
+      } else if (!confirm(`Some repositories failed to download. Continue with ${files.length} successful downloads?`)) {
+        throw new Error('Download cancelled');
+      }
+    }
+    
+    const zipData = createZip(files);
+    const blob = new Blob([zipData], {type: "application/zip"});
+    const downloadLink = document.createElement("a");
+    downloadLink.href = URL.createObjectURL(blob);
+    downloadLink.download = `${document.getElementById('username').value.trim()}-repositories.zip`;
+    downloadLink.click();
+    
+    setTimeout(() => {
+      URL.revokeObjectURL(downloadLink.href);
+    }, 60000);
+    
+  } catch (error) {
+    showError(error.message);
+  } finally {
+    downloadAllButton.innerHTML = originalText;
+    downloadAllButton.disabled = false;
+    
+    setTimeout(() => {
+      document.querySelectorAll('.repo-item').forEach(item => {
+        item.style.backgroundColor = '';
+      });
+    }, 3000);
   }
 }
 
 function createZip(files) {
-  let localFiles = [];
-  let centralDirectory = [];
+  const localFiles = [];
+  const centralDirectory = [];
   let offset = 0;
+  
   files.forEach(file => {
-    let filenameBytes = stringToBytes(file.name);
-    let crc = crc32(file.data);
-    let localHeader = [].concat(
-      numToBytes(0x04034b50, 4),
-      numToBytes(20, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 2),
-      numToBytes(crc, 4),
-      numToBytes(file.data.length, 4),
-      numToBytes(file.data.length, 4),
-      numToBytes(filenameBytes.length, 2),
-      numToBytes(0, 2),
-      filenameBytes
-    );
-    let localHeaderArr = new Uint8Array(localHeader);
-    localFiles.push(localHeaderArr);
+    const filenameBytes = stringToBytes(file.name);
+    const crc = crc32(file.data);
+    
+    const localHeader = concatArrays([
+      numToBytes(0x04034b50, 4), // local file header signature
+      numToBytes(20, 2),         // version needed to extract
+      numToBytes(0, 2),          // general purpose bit flag
+      numToBytes(0, 2),          // compression method
+      numToBytes(0, 2),          // last mod file time
+      numToBytes(0, 2),          // last mod file date
+      numToBytes(crc, 4),        // crc-32
+      numToBytes(file.data.length, 4), // compressed size
+      numToBytes(file.data.length, 4), // uncompressed size
+      numToBytes(filenameBytes.length, 2), // file name length
+      numToBytes(0, 2),          // extra field length
+      filenameBytes             // file name
+    ]);
+    
+    localFiles.push(localHeader);
     localFiles.push(file.data);
-    let centralHeader = [].concat(
-      numToBytes(0x02014b50, 4),
-      numToBytes(20, 2),
-      numToBytes(20, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 2),
-      numToBytes(crc, 4),
-      numToBytes(file.data.length, 4),
-      numToBytes(file.data.length, 4),
-      numToBytes(filenameBytes.length, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 2),
-      numToBytes(0, 4),
-      numToBytes(offset, 4),
-      filenameBytes
-    );
-    centralDirectory.push(new Uint8Array(centralHeader));
-    offset += localHeaderArr.length + file.data.length;
+    
+    const centralHeader = concatArrays([
+      numToBytes(0x02014b50, 4), // central directory file header signature
+      numToBytes(20, 2),         // version made by
+      numToBytes(20, 2),         // version needed to extract
+      numToBytes(0, 2),          // general purpose bit flag
+      numToBytes(0, 2),          // compression method
+      numToBytes(0, 2),          // last mod file time
+      numToBytes(0, 2),          // last mod file date
+      numToBytes(crc, 4),        // crc-32
+      numToBytes(file.data.length, 4), // compressed size
+      numToBytes(file.data.length, 4), // uncompressed size
+      numToBytes(filenameBytes.length, 2), // file name length
+      numToBytes(0, 2),          // extra field length
+      numToBytes(0, 2),          // file comment length
+      numToBytes(0, 2),          // disk number start
+      numToBytes(0, 2),          // internal file attributes
+      numToBytes(0, 4),          // external file attributes
+      numToBytes(offset, 4),     // relative offset of local header
+      filenameBytes              // file name
+    ]);
+    
+    centralDirectory.push(centralHeader);
+    offset += localHeader.length + file.data.length;
   });
-  let centralData = concatArrays(centralDirectory);
-  let eocd = [].concat(
-    numToBytes(0x06054b50, 4),
-    numToBytes(0, 2),
-    numToBytes(0, 2),
-    numToBytes(files.length, 2),
-    numToBytes(files.length, 2),
-    numToBytes(centralData.length, 4),
-    numToBytes(offset, 4),
-    numToBytes(0, 2)
-  );
-  let eocdArr = new Uint8Array(eocd);
-  return concatArrays([concatArrays(localFiles), centralData, eocdArr]);
+  
+  const centralData = concatArrays(centralDirectory);
+  
+  const eocd = concatArrays([
+    numToBytes(0x06054b50, 4),    // end of central directory signature
+    numToBytes(0, 2),             // number of this disk
+    numToBytes(0, 2),             // number of the disk with the start of the central directory
+    numToBytes(files.length, 2),  // total number of entries in the central directory on this disk
+    numToBytes(files.length, 2),  // total number of entries in the central directory
+    numToBytes(centralData.length, 4), // size of the central directory
+    numToBytes(offset, 4),        // offset of start of central directory with respect to the starting disk number
+    numToBytes(0, 2)              // .ZIP file comment length
+  ]);
+  
+  return concatArrays([concatArrays(localFiles), centralData, eocd]);
+}
+
+function showError(message) {
+  const errorContainer = document.getElementById('error-container');
+  errorContainer.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+  errorContainer.style.display = 'block';
+  
+  setTimeout(() => {
+    errorContainer.style.display = 'none';
+  }, 5000);
 }
