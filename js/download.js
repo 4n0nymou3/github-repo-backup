@@ -130,42 +130,42 @@ function createZip(files) {
     const crc = crc32(file.data);
     
     const localHeader = concatArrays([
-      numToBytes(0x04034b50, 4), // local file header signature
-      numToBytes(20, 2),         // version needed to extract
-      numToBytes(0, 2),          // general purpose bit flag
-      numToBytes(0, 2),          // compression method
-      numToBytes(0, 2),          // last mod file time
-      numToBytes(0, 2),          // last mod file date
-      numToBytes(crc, 4),        // crc-32
-      numToBytes(file.data.length, 4), // compressed size
-      numToBytes(file.data.length, 4), // uncompressed size
-      numToBytes(filenameBytes.length, 2), // file name length
-      numToBytes(0, 2),          // extra field length
-      filenameBytes             // file name
+      numToBytes(0x04034b50, 4),
+      numToBytes(20, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 2),
+      numToBytes(crc, 4),
+      numToBytes(file.data.length, 4),
+      numToBytes(file.data.length, 4),
+      numToBytes(filenameBytes.length, 2),
+      numToBytes(0, 2),
+      filenameBytes
     ]);
     
     localFiles.push(localHeader);
     localFiles.push(file.data);
     
     const centralHeader = concatArrays([
-      numToBytes(0x02014b50, 4), // central directory file header signature
-      numToBytes(20, 2),         // version made by
-      numToBytes(20, 2),         // version needed to extract
-      numToBytes(0, 2),          // general purpose bit flag
-      numToBytes(0, 2),          // compression method
-      numToBytes(0, 2),          // last mod file time
-      numToBytes(0, 2),          // last mod file date
-      numToBytes(crc, 4),        // crc-32
-      numToBytes(file.data.length, 4), // compressed size
-      numToBytes(file.data.length, 4), // uncompressed size
-      numToBytes(filenameBytes.length, 2), // file name length
-      numToBytes(0, 2),          // extra field length
-      numToBytes(0, 2),          // file comment length
-      numToBytes(0, 2),          // disk number start
-      numToBytes(0, 2),          // internal file attributes
-      numToBytes(0, 4),          // external file attributes
-      numToBytes(offset, 4),     // relative offset of local header
-      filenameBytes              // file name
+      numToBytes(0x02014b50, 4),
+      numToBytes(20, 2),
+      numToBytes(20, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 2),
+      numToBytes(crc, 4),
+      numToBytes(file.data.length, 4),
+      numToBytes(file.data.length, 4),
+      numToBytes(filenameBytes.length, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 2),
+      numToBytes(0, 4),
+      numToBytes(offset, 4),
+      filenameBytes
     ]);
     
     centralDirectory.push(centralHeader);
@@ -175,14 +175,14 @@ function createZip(files) {
   const centralData = concatArrays(centralDirectory);
   
   const eocd = concatArrays([
-    numToBytes(0x06054b50, 4),    // end of central directory signature
-    numToBytes(0, 2),             // number of this disk
-    numToBytes(0, 2),             // number of the disk with the start of the central directory
-    numToBytes(files.length, 2),  // total number of entries in the central directory on this disk
-    numToBytes(files.length, 2),  // total number of entries in the central directory
-    numToBytes(centralData.length, 4), // size of the central directory
-    numToBytes(offset, 4),        // offset of start of central directory with respect to the starting disk number
-    numToBytes(0, 2)              // .ZIP file comment length
+    numToBytes(0x06054b50, 4),
+    numToBytes(0, 2),
+    numToBytes(0, 2),
+    numToBytes(files.length, 2),
+    numToBytes(files.length, 2),
+    numToBytes(centralData.length, 4),
+    numToBytes(offset, 4),
+    numToBytes(0, 2)
   ]);
   
   return concatArrays([concatArrays(localFiles), centralData, eocd]);
