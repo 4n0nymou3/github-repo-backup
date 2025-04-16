@@ -10,7 +10,7 @@ function crc32(buf) {
       }
       table[n] = c;
     }
-    return table; // Test
+    return table;
   })());
   
   let crc = 0 ^ (-1);
