@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A simple web tool to backup GitHub repositories by downloading them as ZIP files">
+    <meta name="description" content="A simple web tool to backup GitHub and GitLab repositories by downloading them as ZIP files">
     <meta name="author" content="Anonymous">
     <meta name="theme-color" content="#1a1b26">
     <meta name="robots" content="index, follow">
-    <title>GitHub Public Repository Backup</title>
+    <title>GitHub and GitLab Public Repository Backup</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,19 +18,26 @@
 <body>
     <main class="terminal-container">
         <header class="terminal-header">
-            <h1 class="terminal-title">GitHub Public Repository Backup Tool</h1>
+            <h1 class="terminal-title">GitHub and GitLab Public Repository Backup Tool</h1>
         </header>
         <section class="terminal-content">
             <div class="fixed-content">
                 <div class="terminal-section">
-                    <p class="terminal-intro">Enter a GitHub username to list and backup public repositories.</p>
+                    <p class="terminal-intro">Enter a GitHub or GitLab username to list and backup public repositories.</p>
                     <div class="terminal-actions input-section">
                         <div class="input-wrapper">
                             <span class="user-avatar" id="user-avatar">
                                 <i class="fas fa-user input-icon" id="default-avatar"></i>
                                 <img src="" id="profile-avatar" class="profile-avatar" aria-hidden="true" alt="User profile avatar" style="display: none;">
                             </span>
-                            <input type="text" id="username" class="subscription-input" placeholder="Enter GitHub username" aria-label="GitHub username">
+                            <input type="text" id="username" class="subscription-input" placeholder="Enter username" aria-label="Username">
+                        </div>
+                        <div class="platform-select-wrapper">
+                            <label for="platform-select" class="platform-label">Select platform:</label>
+                            <select id="platform-select" class="platform-select">
+                                <option value="github">GitHub</option>
+                                <option value="gitlab">GitLab</option>
+                            </select>
                         </div>
                         <div class="button-group">
                             <button onclick="checkRepositories()" class="glow-button primary" aria-label="Search repositories">
