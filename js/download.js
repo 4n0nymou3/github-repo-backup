@@ -1,4 +1,4 @@
-const WORKER_URL = "https://github-zip-proxy.r612q.workers.dev/";
+const WORKER_URL = "https://git-zip-proxy.r612q.workers.dev/";
 
 function crc32(buf) {
   const table = window.crcTable || (window.crcTable = (function() {
