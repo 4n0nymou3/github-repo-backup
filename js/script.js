@@ -6,7 +6,7 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
         apiUrl = `https://api.github.com/users/${username}/repos?type=public&per_page=100&page=${page}`;
     } else if (platform === 'gitlab') {
         const userId = await getGitLabUserId(username);
-        apiUrl = `https://gitlab.com/api/v4/users/${userId}/projects?per_page=100&page=${page}`;
+        apiUrl = `https://gitlab.com/api/v4/users/${userId}/projects?visibility=public&per_page=100&page=${page}`;
     } else {
         throw new Error('Invalid platform selected.');
     }
@@ -254,7 +254,7 @@ function displayRepositories(repos, platform) {
             language = repo.language || 'Not specified';
         } else if (platform === 'gitlab') {
             repoUrl = repo.web_url;
-            zipUrl = `${repoUrl}/-/archive/master/${repo.name}-master.zip`;
+            zipUrl = `${repoUrl}/-/archive/main/${repo.name}-main.zip`;
             updateDate = new Date(repo.last_activity_at).toLocaleDateString();
             createDate = new Date(repo.created_at).toLocaleDateString();
             stars = repo.star_count;
