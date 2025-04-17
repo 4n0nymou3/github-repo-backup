@@ -5,7 +5,8 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
     if (platform === 'github') {
         apiUrl = `https://api.github.com/users/${username}/repos?type=public&per_page=100&page=${page}`;
     } else if (platform === 'gitlab') {
-        apiUrl = `https://gitlab.com/api/v4/users/${username}/projects?per_page=100&page=${page}`;
+        const userId = await getGitLabUserId(username);
+        apiUrl = `https://gitlab.com/api/v4/users/${userId}/projects?per_page=100&page=${page}`;
     } else {
         throw new Error('Invalid platform selected.');
     }
@@ -27,6 +28,22 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
         } else {
             return combinedRepos;
         }
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function getGitLabUserId(username) {
+    try {
+        const response = await fetch(`https://gitlab.com/api/v4/users?username=${username}`);
+        if (!response.ok) {
+            throw new Error(`Error fetching user data from GitLab: ${response.statusText}`);
+        }
+        const users = await response.json();
+        if (users.length === 0) {
+            throw new Error('User not found on GitLab. Please check the username and try again.');
+        }
+        return users[0].id;
     } catch (error) {
         throw error;
     }
@@ -103,15 +120,12 @@ async function checkRepositories() {
             }
             userData = await userResponse.json();
         } else if (platform === 'gitlab') {
-            const userResponse = await fetch(`https://gitlab.com/api/v4/users?username=${username}`);
+            const userId = await getGitLabUserId(username);
+            const userResponse = await fetch(`https://gitlab.com/api/v4/users/${userId}`);
             if (!userResponse.ok) {
                 throw new Error(`Error fetching user data from GitLab: ${response.statusText}`);
             }
-            const users = await userResponse.json();
-            if (users.length === 0) {
-                throw new Error('User not found on GitLab. Please check the username and try again.');
-            }
-            userData = users[0];
+            userData = await userResponse.json();
         }
         
         updateUserAvatar(userData.avatar_url || userData.avatar);
