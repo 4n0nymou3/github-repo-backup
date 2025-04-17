@@ -1,9 +1,17 @@
-const API_BASE_URL = 'https://api.github.com';
 const API_RATE_LIMIT_THRESHOLD = 10;
 
-async function fetchAllRepositories(username, page = 1, allRepos = []) {
+async function fetchAllRepositories(platform, username, page = 1, allRepos = []) {
+    let apiUrl;
+    if (platform === 'github') {
+        apiUrl = `https://api.github.com/users/${username}/repos?type=public&per_page=100&page=${page}`;
+    } else if (platform === 'gitlab') {
+        apiUrl = `https://gitlab.com/api/v4/users/${username}/projects?per_page=100&page=${page}`;
+    } else {
+        throw new Error('Invalid platform selected.');
+    }
+    
     try {
-        const response = await fetch(`${API_BASE_URL}/users/${username}/repos?type=public&per_page=100&page=${page}`);
+        const response = await fetch(apiUrl);
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
@@ -15,7 +23,7 @@ async function fetchAllRepositories(username, page = 1, allRepos = []) {
         const combinedRepos = [...allRepos, ...repos];
         
         if (repos.length === 100) {
-            return fetchAllRepositories(username, page + 1, combinedRepos);
+            return fetchAllRepositories(platform, username, page + 1, combinedRepos);
         } else {
             return combinedRepos;
         }
@@ -24,11 +32,20 @@ async function fetchAllRepositories(username, page = 1, allRepos = []) {
     }
 }
 
-async function checkApiRateLimit() {
+async function checkApiRateLimit(platform) {
+    let apiUrl;
+    if (platform === 'github') {
+        apiUrl = 'https://api.github.com/rate_limit';
+    } else if (platform === 'gitlab') {
+        return { remaining: Infinity };
+    } else {
+        throw new Error('Invalid platform selected.');
+    }
+    
     try {
-        const response = await fetch(`${API_BASE_URL}/rate_limit`);
+        const response = await fetch(apiUrl);
         if (!response.ok) {
-            return { remaining: Infinity }; // Assume no limit issues if we can't check
+            return { remaining: Infinity };
         }
         
         const rateData = await response.json();
@@ -38,14 +55,16 @@ async function checkApiRateLimit() {
         return { remaining, resetTime };
     } catch (error) {
         console.error('Error checking rate limit:', error);
-        return { remaining: Infinity }; // Assume no limit issues if we can't check
+        return { remaining: Infinity };
     }
 }
 
 async function checkRepositories() {
     const username = document.getElementById('username').value.trim();
+    const platform = document.getElementById('platform-select').value;
+    
     if (!username) {
-        showError('Please enter a GitHub username.');
+        showError('Please enter a username.');
         return;
     }
     
@@ -65,34 +84,45 @@ async function checkRepositories() {
     downloadAllButton.style.display = 'none';
     
     try {
-        const { remaining, resetTime } = await checkApiRateLimit();
+        const { remaining, resetTime } = await checkApiRateLimit(platform);
         
-        if (remaining <= API_RATE_LIMIT_THRESHOLD) {
+        if (platform === 'github' && remaining <= API_RATE_LIMIT_THRESHOLD) {
             throw new Error(`GitHub API rate limit is low (${remaining} remaining). Try again after ${resetTime.toLocaleTimeString()}.`);
         }
         
-        const userResponse = await fetch(`${API_BASE_URL}/users/${username}`);
-        
-        if (!userResponse.ok) {
-            if (userResponse.status === 404) {
-                throw new Error('User not found. Please check the username and try again.');
-            } else {
-                const userData = await userResponse.json().catch(() => null);
-                throw new Error(userData?.message || `Error ${userResponse.status}: ${userResponse.statusText}`);
+        let userData;
+        if (platform === 'github') {
+            const userResponse = await fetch(`https://api.github.com/users/${username}`);
+            if (!userResponse.ok) {
+                if (userResponse.status === 404) {
+                    throw new Error('User not found on GitHub. Please check the username and try again.');
+                } else {
+                    const errorData = await userResponse.json().catch(() => null);
+                    throw new Error(errorData?.message || `Error ${userResponse.status}: ${userResponse.statusText}`);
+                }
             }
+            userData = await userResponse.json();
+        } else if (platform === 'gitlab') {
+            const userResponse = await fetch(`https://gitlab.com/api/v4/users?username=${username}`);
+            if (!userResponse.ok) {
+                throw new Error(`Error fetching user data from GitLab: ${response.statusText}`);
+            }
+            const users = await userResponse.json();
+            if (users.length === 0) {
+                throw new Error('User not found on GitLab. Please check the username and try again.');
+            }
+            userData = users[0];
         }
         
-        const userData = await userResponse.json();
+        updateUserAvatar(userData.avatar_url || userData.avatar);
         
-        updateUserAvatar(userData.avatar_url);
-        
-        const repos = await fetchAllRepositories(username);
+        const repos = await fetchAllRepositories(platform, username);
         
         loadingEl.style.display = 'none';
         
         if (repos.length === 0) {
             repoHeaderEl.innerHTML = `
-                <h3>Repositories for ${username}</h3>
+                <h3>Repositories for ${username} on ${platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
                 <span class="repo-count">0</span>
             `;
             repoListEl.innerHTML = '<p class="terminal-intro">No public repositories found.</p>';
@@ -100,16 +130,16 @@ async function checkRepositories() {
             return;
         }
         
-        repos.sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at));
+        repos.sort((a, b) => new Date(b.updated_at || b.last_activity_at) - new Date(a.updated_at || a.last_activity_at));
         
         repoHeaderEl.innerHTML = `
-            <h3>Repositories for ${username}</h3>
+            <h3>Repositories for ${username} on ${platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
             <span class="repo-count">${repos.length}</span>
         `;
         
         setupSearchField(repos.length);
         
-        displayRepositories(repos);
+        displayRepositories(repos, platform);
         
         downloadAllButton.style.display = 'flex';
         clearButton.style.display = 'flex';
@@ -190,22 +220,35 @@ function filterRepositories(searchTerm) {
     }
 }
 
-function displayRepositories(repos) {
+function displayRepositories(repos, platform) {
     const repoListEl = document.getElementById('repoList');
     
     let repoHtml = '<div class="repo-list-container">';
     
     repos.forEach(repo => {
         const repoName = repo.name;
-        const repoUrl = repo.html_url;
+        let repoUrl, zipUrl, updateDate, createDate, stars, forks, language;
+        
+        if (platform === 'github') {
+            repoUrl = repo.html_url;
+            const defaultBranch = repo.default_branch || 'main';
+            zipUrl = `${repoUrl}/archive/refs/heads/${defaultBranch}.zip`;
+            updateDate = new Date(repo.updated_at).toLocaleDateString();
+            createDate = new Date(repo.created_at).toLocaleDateString();
+            stars = repo.stargazers_count;
+            forks = repo.forks_count;
+            language = repo.language || 'Not specified';
+        } else if (platform === 'gitlab') {
+            repoUrl = repo.web_url;
+            zipUrl = `${repoUrl}/-/archive/master/${repo.name}-master.zip`;
+            updateDate = new Date(repo.last_activity_at).toLocaleDateString();
+            createDate = new Date(repo.created_at).toLocaleDateString();
+            stars = repo.star_count;
+            forks = repo.forks_count;
+            language = 'Not specified';
+        }
+        
         const repoDescription = repo.description || 'No description available';
-        const defaultBranch = repo.default_branch || 'main';
-        const zipUrl = `${repoUrl}/archive/refs/heads/${defaultBranch}.zip`;
-        const updateDate = new Date(repo.updated_at).toLocaleDateString();
-        const createDate = new Date(repo.created_at).toLocaleDateString();
-        const stars = repo.stargazers_count;
-        const forks = repo.forks_count;
-        const language = repo.language || 'Not specified';
         
         repoHtml += `
             <div class="repo-item">
