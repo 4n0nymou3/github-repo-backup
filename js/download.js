@@ -49,6 +49,7 @@ function concatArrays(arrays) {
 }
 
 async function downloadAllRepositories() {
+  const platform = document.getElementById('platform-select').value;
   const links = document.querySelectorAll('a[title="Download ZIP"]');
   if (links.length === 0) {
     showError("No repositories available.");
@@ -99,7 +100,7 @@ async function downloadAllRepositories() {
     const blob = new Blob([zipData], {type: "application/zip"});
     const downloadLink = document.createElement("a");
     downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = `${document.getElementById('username').value.trim()}-repositories.zip`;
+    downloadLink.download = `${document.getElementById('username').value.trim()}-${platform}-repositories.zip`;
     downloadLink.click();
     
     setTimeout(() => {
