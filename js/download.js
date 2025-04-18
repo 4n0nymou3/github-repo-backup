@@ -1,4 +1,4 @@
-const WORKER_URL = "https://git-zip-proxy.r612q.workers.dev/";
+const WORKER_URL = "https://github-zip-proxy.r612q.workers.dev/";
 
 function crc32(buf) {
   const table = window.crcTable || (window.crcTable = (function() {
@@ -49,7 +49,6 @@ function concatArrays(arrays) {
 }
 
 async function downloadAllRepositories() {
-  const platform = document.getElementById('platform-select').value;
   const links = document.querySelectorAll('a[title="Download ZIP"]');
   if (links.length === 0) {
     showError("No repositories available.");
@@ -100,7 +99,7 @@ async function downloadAllRepositories() {
     const blob = new Blob([zipData], {type: "application/zip"});
     const downloadLink = document.createElement("a");
     downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = `${document.getElementById('username').value.trim()}-${platform}-repositories.zip`;
+    downloadLink.download = `${document.getElementById('username').value.trim()}-repositories.zip`;
     downloadLink.click();
     
     setTimeout(() => {
