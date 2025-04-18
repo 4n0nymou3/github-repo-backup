@@ -14,7 +14,7 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
             throw new Error('User not found on GitLab.');
         }
         const userId = users[0].id;
-        apiUrl = `https://gitlab.com/api/v4/users/${userId}/projects?per_page=100&page=${page}`;
+        apiUrl = `https://gitlab.com/api/v4/users/${userId}/projects?visibility=public&per_page=100&page=${page}`;
     } else {
         throw new Error('Invalid platform selected.');
     }
@@ -29,10 +29,6 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
         }
         
         let repos = await response.json();
-        
-        if (platform === 'gitlab') {
-            repos = repos.filter(repo => repo.visibility === 'public');
-        }
         
         const combinedRepos = [...allRepos, ...repos];
         
