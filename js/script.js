@@ -28,7 +28,12 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
             throw new Error(errorMessage);
         }
         
-        const repos = await response.json();
+        let repos = await response.json();
+        
+        if (platform === 'gitlab') {
+            repos = repos.filter(repo => repo.visibility === 'public');
+        }
+        
         const combinedRepos = [...allRepos, ...repos];
         
         if (repos.length === 100) {
@@ -114,7 +119,7 @@ async function checkRepositories() {
         } else if (platform === 'gitlab') {
             const userResponse = await fetch(`https://gitlab.com/api/v4/users?username=${username}`);
             if (!userResponse.ok) {
-                throw new Error(`Error fetching user data from GitLab: ${response.statusText}`);
+                throw new Error(`Error fetching user data from GitLab: ${userResponse.statusText}`);
             }
             const users = await userResponse.json();
             if (users.length === 0) {
