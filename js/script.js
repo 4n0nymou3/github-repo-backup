@@ -5,8 +5,16 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
     if (platform === 'github') {
         apiUrl = `https://api.github.com/users/${username}/repos?type=public&per_page=100&page=${page}`;
     } else if (platform === 'gitlab') {
-        const userId = await getGitLabUserId(username);
-        apiUrl = `https://gitlab.com/api/v4/users/${userId}/projects?visibility=public&per_page=100&page=${page}`;
+        const userResponse = await fetch(`https://gitlab.com/api/v4/users?username=${username}`);
+        if (!userResponse.ok) {
+            throw new Error(`Error fetching user data from GitLab: ${userResponse.statusText}`);
+        }
+        const users = await userResponse.json();
+        if (users.length === 0) {
+            throw new Error('User not found on GitLab.');
+        }
+        const userId = users[0].id;
+        apiUrl = `https://gitlab.com/api/v4/users/${userId}/projects?per_page=100&page=${page}`;
     } else {
         throw new Error('Invalid platform selected.');
     }
@@ -28,22 +36,6 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
         } else {
             return combinedRepos;
         }
-    } catch (error) {
-        throw error;
-    }
-}
-
-async function getGitLabUserId(username) {
-    try {
-        const response = await fetch(`https://gitlab.com/api/v4/users?username=${username}`);
-        if (!response.ok) {
-            throw new Error(`Error fetching user data from GitLab: ${response.statusText}`);
-        }
-        const users = await response.json();
-        if (users.length === 0) {
-            throw new Error('User not found on GitLab. Please check the username and try again.');
-        }
-        return users[0].id;
     } catch (error) {
         throw error;
     }
@@ -120,12 +112,15 @@ async function checkRepositories() {
             }
             userData = await userResponse.json();
         } else if (platform === 'gitlab') {
-            const userId = await getGitLabUserId(username);
-            const userResponse = await fetch(`https://gitlab.com/api/v4/users/${userId}`);
+            const userResponse = await fetch(`https://gitlab.com/api/v4/users?username=${username}`);
             if (!userResponse.ok) {
                 throw new Error(`Error fetching user data from GitLab: ${response.statusText}`);
             }
-            userData = await userResponse.json();
+            const users = await userResponse.json();
+            if (users.length === 0) {
+                throw new Error('User not found on GitLab. Please check the username and try again.');
+            }
+            userData = users[0];
         }
         
         updateUserAvatar(userData.avatar_url || userData.avatar);
@@ -254,7 +249,7 @@ function displayRepositories(repos, platform) {
             language = repo.language || 'Not specified';
         } else if (platform === 'gitlab') {
             repoUrl = repo.web_url;
-            zipUrl = `${repoUrl}/-/archive/main/${repo.name}-main.zip`;
+            zipUrl = `${repoUrl}/-/archive/master/${repo.name}-master.zip`;
             updateDate = new Date(repo.last_activity_at).toLocaleDateString();
             createDate = new Date(repo.created_at).toLocaleDateString();
             stars = repo.star_count;
