@@ -173,35 +173,6 @@ body {
     opacity: 0.8;
 }
 
-.platform-select-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.platform-label {
-    color: var(--terminal-text);
-    font-size: clamp(13px, 1.8vw, 16px);
-}
-
-.platform-select {
-    background-color: var(--terminal-input-bg);
-    border: 2px solid var(--terminal-border);
-    border-radius: 6px;
-    color: var(--terminal-text);
-    padding: 8px 12px;
-    font-size: clamp(13px, 1.8vw, 16px);
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.platform-select:focus {
-    outline: none;
-    border-color: var(--terminal-purple);
-    box-shadow: 0 0 0 2px rgba(187, 154, 247, 0.3);
-}
-
 .button-icon {
     margin-right: 8px;
     font-size: clamp(12px, 1.5vw, 14px);
