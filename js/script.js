@@ -1,26 +1,17 @@
+const GITHUB_API_BASE_URL = 'https://api.github.com';
+const GITLAB_API_BASE_URL = 'https://gitlab.com/api/v4';
 const API_RATE_LIMIT_THRESHOLD = 10;
 
-async function fetchAllRepositories(platform, username, page = 1, allRepos = []) {
-    let apiUrl;
-    if (platform === 'github') {
-        apiUrl = `https://api.github.com/users/${username}/repos?type=public&per_page=100&page=${page}`;
-    } else if (platform === 'gitlab') {
-        const userResponse = await fetch(`https://gitlab.com/api/v4/users?username=${username}`);
-        if (!userResponse.ok) {
-            throw new Error(`Error fetching user data from GitLab: ${userResponse.statusText}`);
-        }
-        const users = await userResponse.json();
-        if (users.length === 0) {
-            throw new Error('User not found on GitLab.');
-        }
-        const userId = users[0].id;
-        apiUrl = `https://gitlab.com/api/v4/users/${userId}/projects?visibility=public&per_page=100&page=${page}`;
-    } else {
-        throw new Error('Invalid platform selected.');
-    }
-    
+async function fetchAllRepositories(username, page = 1, allRepos = []) {
     try {
-        const response = await fetch(apiUrl);
+        const platform = document.getElementById('platform-select').value;
+        let response;
+        
+        if (platform === 'github') {
+            response = await fetch(`${GITHUB_API_BASE_URL}/users/${username}/repos?type=public&per_page=100&page=${page}`);
+        } else {
+            response = await fetch(`${GITLAB_API_BASE_URL}/users/${username}/projects?visibility=public&per_page=100&page=${page}`);
+        }
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => null);
@@ -28,12 +19,11 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
             throw new Error(errorMessage);
         }
         
-        let repos = await response.json();
-        
+        const repos = await response.json();
         const combinedRepos = [...allRepos, ...repos];
         
         if (repos.length === 100) {
-            return fetchAllRepositories(platform, username, page + 1, combinedRepos);
+            return fetchAllRepositories(username, page + 1, combinedRepos);
         } else {
             return combinedRepos;
         }
@@ -42,27 +32,24 @@ async function fetchAllRepositories(platform, username, page = 1, allRepos = [])
     }
 }
 
-async function checkApiRateLimit(platform) {
-    let apiUrl;
-    if (platform === 'github') {
-        apiUrl = 'https://api.github.com/rate_limit';
-    } else if (platform === 'gitlab') {
-        return { remaining: Infinity };
-    } else {
-        throw new Error('Invalid platform selected.');
-    }
-    
+async function checkApiRateLimit() {
     try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-            return { remaining: Infinity };
+        const platform = document.getElementById('platform-select').value;
+        
+        if (platform === 'github') {
+            const response = await fetch(`${GITHUB_API_BASE_URL}/rate_limit`);
+            if (!response.ok) {
+                return { remaining: Infinity };
+            }
+            
+            const rateData = await response.json();
+            const remaining = rateData.resources.core.remaining;
+            const resetTime = new Date(rateData.resources.core.reset * 1000);
+            
+            return { remaining, resetTime };
+        } else {
+            return { remaining: Infinity }; // GitLab doesn't have the same rate limit approach
         }
-        
-        const rateData = await response.json();
-        const remaining = rateData.resources.core.remaining;
-        const resetTime = new Date(rateData.resources.core.reset * 1000);
-        
-        return { remaining, resetTime };
     } catch (error) {
         console.error('Error checking rate limit:', error);
         return { remaining: Infinity };
@@ -71,12 +58,12 @@ async function checkApiRateLimit(platform) {
 
 async function checkRepositories() {
     const username = document.getElementById('username').value.trim();
-    const platform = document.getElementById('platform-select').value;
-    
     if (!username) {
         showError('Please enter a username.');
         return;
     }
+    
+    const platform = document.getElementById('platform-select').value;
     
     const repoHeaderEl = document.getElementById('repoHeader');
     const repoListEl = document.getElementById('repoList');
@@ -94,45 +81,50 @@ async function checkRepositories() {
     downloadAllButton.style.display = 'none';
     
     try {
-        const { remaining, resetTime } = await checkApiRateLimit(platform);
-        
-        if (platform === 'github' && remaining <= API_RATE_LIMIT_THRESHOLD) {
-            throw new Error(`GitHub API rate limit is low (${remaining} remaining). Try again after ${resetTime.toLocaleTimeString()}.`);
-        }
-        
-        let userData;
         if (platform === 'github') {
-            const userResponse = await fetch(`https://api.github.com/users/${username}`);
-            if (!userResponse.ok) {
-                if (userResponse.status === 404) {
-                    throw new Error('User not found on GitHub. Please check the username and try again.');
-                } else {
-                    const errorData = await userResponse.json().catch(() => null);
-                    throw new Error(errorData?.message || `Error ${userResponse.status}: ${userResponse.statusText}`);
-                }
+            const { remaining, resetTime } = await checkApiRateLimit();
+            
+            if (remaining <= API_RATE_LIMIT_THRESHOLD) {
+                throw new Error(`GitHub API rate limit is low (${remaining} remaining). Try again after ${resetTime.toLocaleTimeString()}.`);
             }
-            userData = await userResponse.json();
-        } else if (platform === 'gitlab') {
-            const userResponse = await fetch(`https://gitlab.com/api/v4/users?username=${username}`);
-            if (!userResponse.ok) {
-                throw new Error(`Error fetching user data from GitLab: ${userResponse.statusText}`);
-            }
-            const users = await userResponse.json();
-            if (users.length === 0) {
-                throw new Error('User not found on GitLab. Please check the username and try again.');
-            }
-            userData = users[0];
         }
         
-        updateUserAvatar(userData.avatar_url || userData.avatar);
+        let userResponse, userData;
         
-        const repos = await fetchAllRepositories(platform, username);
+        if (platform === 'github') {
+            userResponse = await fetch(`${GITHUB_API_BASE_URL}/users/${username}`);
+        } else {
+            userResponse = await fetch(`${GITLAB_API_BASE_URL}/users?username=${username}`);
+        }
+        
+        if (!userResponse.ok) {
+            if (userResponse.status === 404) {
+                throw new Error('User not found. Please check the username and try again.');
+            } else {
+                const userData = await userResponse.json().catch(() => null);
+                throw new Error(userData?.message || `Error ${userResponse.status}: ${userResponse.statusText}`);
+            }
+        }
+        
+        if (platform === 'github') {
+            userData = await userResponse.json();
+            updateUserAvatar(userData.avatar_url);
+        } else {
+            const gitlabUsers = await userResponse.json();
+            if (gitlabUsers.length === 0) {
+                throw new Error('User not found. Please check the username and try again.');
+            }
+            userData = gitlabUsers[0];
+            updateUserAvatar(userData.avatar_url);
+        }
+        
+        const repos = await fetchAllRepositories(platform === 'github' ? username : userData.id);
         
         loadingEl.style.display = 'none';
         
         if (repos.length === 0) {
             repoHeaderEl.innerHTML = `
-                <h3>Repositories for ${username} on ${platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
+                <h3>Repositories for ${username}</h3>
                 <span class="repo-count">0</span>
             `;
             repoListEl.innerHTML = '<p class="terminal-intro">No public repositories found.</p>';
@@ -140,10 +132,14 @@ async function checkRepositories() {
             return;
         }
         
-        repos.sort((a, b) => new Date(b.updated_at || b.last_activity_at) - new Date(a.updated_at || a.last_activity_at));
+        repos.sort((a, b) => {
+            const dateA = platform === 'github' ? new Date(b.updated_at) : new Date(b.last_activity_at);
+            const dateB = platform === 'github' ? new Date(a.updated_at) : new Date(a.last_activity_at);
+            return dateA - dateB;
+        });
         
         repoHeaderEl.innerHTML = `
-            <h3>Repositories for ${username} on ${platform.charAt(0).toUpperCase() + platform.slice(1)}</h3>
+            <h3>Repositories for ${username}</h3>
             <span class="repo-count">${repos.length}</span>
         `;
         
@@ -236,56 +232,84 @@ function displayRepositories(repos, platform) {
     let repoHtml = '<div class="repo-list-container">';
     
     repos.forEach(repo => {
-        const repoName = repo.name;
-        let repoUrl, zipUrl, updateDate, createDate, stars, forks, language;
-        
         if (platform === 'github') {
-            repoUrl = repo.html_url;
+            const repoName = repo.name;
+            const repoUrl = repo.html_url;
+            const repoDescription = repo.description || 'No description available';
             const defaultBranch = repo.default_branch || 'main';
-            zipUrl = `${repoUrl}/archive/refs/heads/${defaultBranch}.zip`;
-            updateDate = new Date(repo.updated_at).toLocaleDateString();
-            createDate = new Date(repo.created_at).toLocaleDateString();
-            stars = repo.stargazers_count;
-            forks = repo.forks_count;
-            language = repo.language || 'Not specified';
-        } else if (platform === 'gitlab') {
-            repoUrl = repo.web_url;
-            zipUrl = `${repoUrl}/-/archive/master/${repo.name}-master.zip`;
-            updateDate = new Date(repo.last_activity_at).toLocaleDateString();
-            createDate = new Date(repo.created_at).toLocaleDateString();
-            stars = repo.star_count;
-            forks = repo.forks_count;
-            language = 'Not specified';
+            const zipUrl = `${repoUrl}/archive/refs/heads/${defaultBranch}.zip`;
+            const updateDate = new Date(repo.updated_at).toLocaleDateString();
+            const createDate = new Date(repo.created_at).toLocaleDateString();
+            const stars = repo.stargazers_count;
+            const forks = repo.forks_count;
+            const language = repo.language || 'Not specified';
+            
+            repoHtml += `
+                <div class="repo-item" data-platform="github">
+                    <div>
+                        <div class="repo-name-container" title="${repoName}">${repoName}</div>
+                        <div class="repo-description" title="${repoDescription}">${repoDescription}</div>
+                    </div>
+                    <div class="repo-info">
+                        <div class="repo-dates-langs">
+                            <span class="repo-date">Created: ${createDate} | Updated: ${updateDate}</span>
+                            <span class="repo-language"><i class="fas fa-code"></i> ${language}</span>
+                        </div>
+                        <div class="repo-stats">
+                            <span title="${stars} stars"><i class="fas fa-star"></i> ${stars}</span>
+                            <span title="${forks} forks"><i class="fas fa-code-branch"></i> ${forks}</span>
+                        </div>
+                        <div class="repo-actions">
+                            <a href="${repoUrl}" target="_blank" rel="noopener noreferrer" class="glow-button secondary" title="View repository">
+                                <i class="fas fa-code"></i>
+                            </a>
+                            <a href="${zipUrl}" class="glow-button secondary" title="Download ZIP">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            const repoName = repo.name;
+            const repoUrl = repo.web_url;
+            const repoDescription = repo.description || 'No description available';
+            const defaultBranch = repo.default_branch || 'main';
+            const projectId = encodeURIComponent(repo.id);
+            const zipUrl = `${GITLAB_API_BASE_URL}/projects/${projectId}/repository/archive.zip?sha=${defaultBranch}`;
+            const updateDate = new Date(repo.last_activity_at).toLocaleDateString();
+            const createDate = new Date(repo.created_at).toLocaleDateString();
+            const stars = repo.star_count;
+            const forks = repo.forks_count;
+            const language = 'Not specified'; // GitLab API doesn't provide language directly
+            
+            repoHtml += `
+                <div class="repo-item" data-platform="gitlab">
+                    <div>
+                        <div class="repo-name-container" title="${repoName}">${repoName}</div>
+                        <div class="repo-description" title="${repoDescription}">${repoDescription}</div>
+                    </div>
+                    <div class="repo-info">
+                        <div class="repo-dates-langs">
+                            <span class="repo-date">Created: ${createDate} | Updated: ${updateDate}</span>
+                            <span class="repo-language"><i class="fas fa-code"></i> ${language}</span>
+                        </div>
+                        <div class="repo-stats">
+                            <span title="${stars} stars"><i class="fas fa-star"></i> ${stars}</span>
+                            <span title="${forks} forks"><i class="fas fa-code-branch"></i> ${forks}</span>
+                        </div>
+                        <div class="repo-actions">
+                            <a href="${repoUrl}" target="_blank" rel="noopener noreferrer" class="glow-button secondary" title="View repository">
+                                <i class="fas fa-code"></i>
+                            </a>
+                            <a href="${zipUrl}" class="glow-button secondary" title="Download ZIP">
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
-        
-        const repoDescription = repo.description || 'No description available';
-        
-        repoHtml += `
-            <div class="repo-item">
-                <div>
-                    <div class="repo-name-container" title="${repoName}">${repoName}</div>
-                    <div class="repo-description" title="${repoDescription}">${repoDescription}</div>
-                </div>
-                <div class="repo-info">
-                    <div class="repo-dates-langs">
-                        <span class="repo-date">Created: ${createDate} | Updated: ${updateDate}</span>
-                        <span class="repo-language"><i class="fas fa-code"></i> ${language}</span>
-                    </div>
-                    <div class="repo-stats">
-                        <span title="${stars} stars"><i class="fas fa-star"></i> ${stars}</span>
-                        <span title="${forks} forks"><i class="fas fa-code-branch"></i> ${forks}</span>
-                    </div>
-                    <div class="repo-actions">
-                        <a href="${repoUrl}" target="_blank" rel="noopener noreferrer" class="glow-button secondary" title="View repository">
-                            <i class="fas fa-code"></i>
-                        </a>
-                        <a href="${zipUrl}" class="glow-button secondary" title="Download ZIP">
-                            <i class="fas fa-download"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        `;
     });
     
     repoHtml += '</div>';
@@ -335,5 +359,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     inputField.addEventListener('input', function() {
         document.getElementById('error-container').style.display = 'none';
+    });
+    
+    document.getElementById('platform-select').addEventListener('change', function() {
+        resetEverything();
     });
 });
